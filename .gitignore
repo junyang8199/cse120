@@ -1,0 +1,10 @@
+# Mac folder hidden file
+.DS_Store
+
+# IDE file
+Projects.iml
+/.idea/
+/out/
+
+
+
