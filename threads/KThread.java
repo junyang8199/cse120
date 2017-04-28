@@ -203,7 +203,20 @@ public class KThread {
 
 		currentThread.status = statusFinished;
 
+		// Wake up all the threads waiting on the current thread
+		KThread waitingThread;
+		while ((waitingThread = currentThread.joinWaitingThreads.nextThread()) != null) {
+			if (waitingThread.status != statusReady)
+				waitingThread.ready();
+		}
+
+		System.out.println("After " + currentThread.toString() +  " signaling");
+
 		sleep();
+
+		// Release the lock
+		Machine.interrupt().enable();
+
 	}
 
 	/**
@@ -283,7 +296,24 @@ public class KThread {
 	public void join() {
 		Lib.debug(dbgThread, "Joining to thread: " + toString());
 
-		Lib.assertTrue(this != currentThread);
+		Lib.assertTrue(this != currentThread, "Attempting to let " +
+				"the currentThread call join()");
+
+		System.out.println(this.toString() + " attempts to join " + currentThread.toString());
+
+		// Acquire a lock
+		boolean intStatus = Machine.interrupt().disable();
+
+		// Only put the parent to sleep when the child has not finished executing
+		if (status != statusFinished)
+		{
+			joinWaitingThreads.waitForAccess(currentThread);
+
+			sleep();
+		}
+
+		// Release the lock
+		Machine.interrupt().restore(intStatus);
 
 	}
 
@@ -339,7 +369,7 @@ public class KThread {
 	 * The state of the previously running thread must already have been changed
 	 * from running to blocked or ready (depending on whether the thread is
 	 * sleeping or yielding).
-	 * 
+	 *
 	 * @param finishing <tt>true</tt> if the current thread is finished, and
 	 * should be destroyed by the new thread.
 	 */
@@ -413,8 +443,23 @@ public class KThread {
 	public static void selfTest() {
 		Lib.debug(dbgThread, "Enter KThread.selfTest");
 
-		new KThread(new PingTest(1)).setName("forked thread").fork();
-		new PingTest(0).run();
+		//new KThread(new PingTest(0)).setName("forked thread").fork();
+		//new PingTest(1).run();
+
+		KThread p0 = new KThread(new PingTest(0));
+		p0.setName("parent");
+		p0.fork();
+		//p0.join();
+
+		KThread c0 = new KThread(new PingTest(1));
+		c0.setName("Child");
+		c0.fork();
+
+		p0.join();
+		c0.join();
+
+
+
 	}
 
 	private static final char dbgThread = 't';
@@ -465,4 +510,10 @@ public class KThread {
 	private static KThread toBeDestroyed = null;
 
 	private static KThread idleThread = null;
+
+	/**
+	 * A list of thread that waiting for this thread by join() method
+	 */
+	private ThreadQueue joinWaitingThreads = ThreadedKernel.scheduler.newThreadQueue(true);
+
 }
