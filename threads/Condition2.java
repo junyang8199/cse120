@@ -2,6 +2,8 @@ package nachos.threads;
 
 import nachos.machine.*;
 
+import java.util.LinkedList;
+
 /**
  * An implementation of condition variables that disables interrupt()s for
  * synchronization.
@@ -32,9 +34,17 @@ public class Condition2 {
 	public void sleep() {
 		Lib.assertTrue(conditionLock.isHeldByCurrentThread());
 
+		boolean intStatus = Machine.interrupt().disable();
+
+		waitQueue.waitForAccess(KThread.currentThread());
+
 		conditionLock.release();
 
+		KThread.sleep();
+
 		conditionLock.acquire();
+
+		Machine.interrupt().restore(intStatus);
 	}
 
 	/**
@@ -43,6 +53,15 @@ public class Condition2 {
 	 */
 	public void wake() {
 		Lib.assertTrue(conditionLock.isHeldByCurrentThread());
+
+		boolean intStatus = Machine.interrupt().disable();
+
+		KThread thread=waitQueue.nextThread();
+
+		if (!(thread==null))
+			thread.ready();
+
+		Machine.interrupt().restore(intStatus);
 	}
 
 	/**
@@ -50,8 +69,18 @@ public class Condition2 {
 	 * thread must hold the associated lock.
 	 */
 	public void wakeAll() {
+
 		Lib.assertTrue(conditionLock.isHeldByCurrentThread());
+
+		while (waitQueue!=null)
+			wake();
 	}
 
 	private Lock conditionLock;
+
+	/**
+	 * A list of thread that waiting for this condition
+	 */
+	private ThreadQueue waitQueue =
+			ThreadedKernel.scheduler.newThreadQueue(true);
 }

@@ -195,6 +195,7 @@ public class KThread {
 		Lib.debug(dbgThread, "Finishing thread: " + currentThread.toString());
 
 		Machine.interrupt().disable();
+		System.out.println(currentThread.toString() + "finish Interrupt disable");
 
 		Machine.autoGrader().finishingCurrentThread();
 
@@ -303,6 +304,7 @@ public class KThread {
 
 		// Acquire a lock
 		boolean intStatus = Machine.interrupt().disable();
+		System.out.println(this.toString() + "join Interrupt disable");
 
 		// Only put the parent to sleep when the child has not finished executing
 		if (status != statusFinished) {
@@ -312,7 +314,7 @@ public class KThread {
 
 		// Release the lock
 		Machine.interrupt().restore(intStatus);
-		System.out.println("Interrupt enable");
+		System.out.println(this.toString() + "join Interrupt enable");
 	}
 
 	/**
@@ -445,16 +447,14 @@ public class KThread {
 		//new PingTest(1).run();
 
 		KThread p0 = new KThread(new PingTest(0));
-		p0.setName("parent");
-		p0.fork();
-		p0.join();
-		//p0.join();
-
 		KThread c0 = new KThread(new PingTest(1));
+		p0.setName("parent");
 		c0.setName("Child");
+
+		p0.fork();
 		c0.fork();
 
-		//p0.join();
+		p0.join();
 		c0.join();
 
 
