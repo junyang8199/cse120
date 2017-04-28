@@ -40,7 +40,9 @@ public class Lock {
 			KThread.sleep();
 		}
 		else {
+			// Current thread gets access
 			waitQueue.acquire(thread);
+
 			lockHolder = thread;
 		}
 

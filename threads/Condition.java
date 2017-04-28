@@ -82,8 +82,12 @@ public class Condition {
 		Semaphore waiter = new Semaphore(0);
 		waitQueue.add(waiter);
 
+		// Because waiter is now in the waiQueue, there is no chance the sleeper will
+		// miss the wake-up, even though the lock is released before calling P()
 		conditionLock.release();
 		waiter.P();
+
+		// Automatically acquire the lock when returning from sleeping
 		conditionLock.acquire();
 	}
 

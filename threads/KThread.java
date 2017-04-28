@@ -214,8 +214,8 @@ public class KThread {
 
 		sleep();
 
-		// Release the lock
-		Machine.interrupt().enable();
+		// Release the lock -> No need, it'll be enabled in the last line of parent's join()
+		//Machine.interrupt().enable();
 
 	}
 
@@ -305,16 +305,14 @@ public class KThread {
 		boolean intStatus = Machine.interrupt().disable();
 
 		// Only put the parent to sleep when the child has not finished executing
-		if (status != statusFinished)
-		{
+		if (status != statusFinished) {
 			joinWaitingThreads.waitForAccess(currentThread);
-
 			sleep();
 		}
 
 		// Release the lock
 		Machine.interrupt().restore(intStatus);
-
+		System.out.println("Interrupt enable");
 	}
 
 	/**
@@ -370,7 +368,7 @@ public class KThread {
 	 * from running to blocked or ready (depending on whether the thread is
 	 * sleeping or yielding).
 	 *
-	 * @param finishing <tt>true</tt> if the current thread is finished, and
+	 * @param /finishing <tt>true</tt> if the current thread is finished, and
 	 * should be destroyed by the new thread.
 	 */
 	private void run() {
@@ -449,13 +447,14 @@ public class KThread {
 		KThread p0 = new KThread(new PingTest(0));
 		p0.setName("parent");
 		p0.fork();
+		p0.join();
 		//p0.join();
 
 		KThread c0 = new KThread(new PingTest(1));
 		c0.setName("Child");
 		c0.fork();
 
-		p0.join();
+		//p0.join();
 		c0.join();
 
 
