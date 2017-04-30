@@ -37,9 +37,12 @@ public class Alarm {
 
 		timeWaiter nextWaiter = waitQueue.peek();
 		while (nextWaiter != null && nextWaiter.timeToWake <= currentTime) {
-			System.out.println("!!!!!!!!!!!!!!!!!!!!!!!Wake");
 			waitQueue.poll();
 			nextWaiter.waiter.ready();
+
+			Lib.debug(mySignal,
+					"It's " + nextWaiter.waiter.toString()+ "'s time to wake up ");
+
 			nextWaiter = waitQueue.peek();
 		}
 
@@ -71,10 +74,13 @@ public class Alarm {
 
 		boolean intStatus = Machine.interrupt().disable();
 
-		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!Sleep");
 		long wakeTime = Machine.timer().getTime() + x;
 		KThread thread = KThread.currentThread();
 		waitQueue.add(new timeWaiter(thread, wakeTime));
+
+		Lib.debug(mySignal,
+				KThread.currentThread().toString()+ " sleeps util " + wakeTime);
+
 		KThread.sleep();
 
 		Machine.interrupt().restore(intStatus);
@@ -88,6 +94,8 @@ public class Alarm {
 	 * Objects in the queue are sorted by their wakeup time.
 	 */
 	private PriorityQueue<timeWaiter> waitQueue;
+
+	private static final char mySignal = 'm';
 
 	/**
 	 * A data type to store information of threads waiting on the waitUntil() method.

@@ -197,7 +197,6 @@ public class KThread {
 		Lib.debug(dbgThread, "Finishing thread: " + currentThread.toString());
 
 		Machine.interrupt().disable();
-		System.out.println(currentThread.toString() + "finish Interrupt disable");
 
 		Machine.autoGrader().finishingCurrentThread();
 
@@ -211,9 +210,9 @@ public class KThread {
 		while ((waitingThread = currentThread.joinWaitingThreads.nextThread()) != null) {
 			if (waitingThread.status != statusReady)
 				waitingThread.ready();
+			Lib.debug(mySignal,
+					currentThread.toString()+ " wakes " + waitingThread.toString());
 		}
-
-		System.out.println("After " + currentThread.toString() +  " signaling");
 
 		sleep();
 
@@ -302,11 +301,11 @@ public class KThread {
 		Lib.assertTrue(this != currentThread, "Attempting to let " +
 				"the currentThread call join()");
 
-		System.out.println(this.toString() + " attempts to join " + currentThread.toString());
+		Lib.debug(mySignal,
+				this.toString() + " attempts to join " + currentThread.toString());
 
 		// Acquire a lock
 		boolean intStatus = Machine.interrupt().disable();
-		System.out.println(this.toString() + "join Interrupt disable");
 
 		// Only put the parent to sleep when the child has not finished executing
 		if (status != statusFinished) {
@@ -316,7 +315,8 @@ public class KThread {
 
 		// Release the lock
 		Machine.interrupt().restore(intStatus);
-		System.out.println(this.toString() + "join Interrupt enable");
+		Lib.debug(mySignal,
+				currentThread.toString() + " return from join");
 	}
 
 	/**
@@ -468,6 +468,8 @@ public class KThread {
 	}
 
 	private static final char dbgThread = 't';
+
+	private static final char mySignal = 'm';
 
 	/**
 	 * Additional state used by schedulers.
