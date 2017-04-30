@@ -469,7 +469,7 @@ public class KThread {
 
 	private static final char dbgThread = 't';
 
-	private static final char mySignal = 'm';
+	private static final char mySignal = 'b';
 
 	/**
 	 * Additional state used by schedulers.

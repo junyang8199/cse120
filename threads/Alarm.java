@@ -95,7 +95,7 @@ public class Alarm {
 	 */
 	private PriorityQueue<timeWaiter> waitQueue;
 
-	private static final char mySignal = 'm';
+	private static final char mySignal = 'b';
 
 	/**
 	 * A data type to store information of threads waiting on the waitUntil() method.
