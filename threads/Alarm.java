@@ -2,6 +2,8 @@ package nachos.threads;
 
 import nachos.machine.*;
 
+import java.util.PriorityQueue;
+
 /**
  * Uses the hardware timer to provide preemption, and to allow threads to sleep
  * until a certain time.
@@ -15,6 +17,8 @@ public class Alarm {
 	 * <b>Note</b>: Nachos will not function correctly with more than one alarm.
 	 */
 	public Alarm() {
+		waitQueue = new PriorityQueue<timeWaiter>();
+
 		Machine.timer().setInterruptHandler(new Runnable() {
 			public void run() {
 				timerInterrupt();
@@ -29,7 +33,18 @@ public class Alarm {
 	 * should be run.
 	 */
 	public void timerInterrupt() {
+		long currentTime = Machine.timer().getTime();
+
+		timeWaiter nextWaiter = waitQueue.peek();
+		while (nextWaiter != null && nextWaiter.timeToWake <= currentTime) {
+			System.out.println("!!!!!!!!!!!!!!!!!!!!!!!Wake");
+			waitQueue.poll();
+			nextWaiter.waiter.ready();
+			nextWaiter = waitQueue.peek();
+		}
+
 		KThread.currentThread().yield();
+
 	}
 
 	/**
@@ -45,9 +60,71 @@ public class Alarm {
 	 * @see nachos.machine.Timer#getTime()
 	 */
 	public void waitUntil(long x) {
-		// for now, cheat just to get something working (busy waiting is bad)
+		/**
+		 * Original implementation--busy waiting:
+		 *
+		 * // for now, cheat just to get something working (busy waiting is bad)
+		 * long wakeTime = Machine.timer().getTime() + x;
+		 * while (wakeTime > Machine.timer().getTime())
+		 * 		KThread.yield();
+		 */
+
+		boolean intStatus = Machine.interrupt().disable();
+
+		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!Sleep");
 		long wakeTime = Machine.timer().getTime() + x;
-		while (wakeTime > Machine.timer().getTime())
-			KThread.yield();
+		KThread thread = KThread.currentThread();
+		waitQueue.add(new timeWaiter(thread, wakeTime));
+		KThread.sleep();
+
+		Machine.interrupt().restore(intStatus);
+
+
+	}
+
+	/**
+	 * A queue to store threads waiting on the waitUntil() method.
+	 * Objects putting into the queue are of timeWaiter type.
+	 * Objects in the queue are sorted by their wakeup time.
+	 */
+	private PriorityQueue<timeWaiter> waitQueue;
+
+	/**
+	 * A data type to store information of threads waiting on the waitUntil() method.
+	 * It implements Comparable so objects of it can be sorted by the timeToWake field.
+	 */
+	private class timeWaiter implements Comparable<timeWaiter>{
+		/**
+		 * Create a new time waiter.
+		 * Specify the thread who's waiting and the time it should be waken up.
+		 */
+		timeWaiter(KThread thread, long time) {
+			waiter = thread;
+			timeToWake = time;
+		}
+
+		/**
+	     * The timeWaiter object with larger number of timeToWake is considered larger.
+		 */
+		public int compareTo(timeWaiter o) {
+			if (this.timeToWake > o.timeToWake)
+				return 1;
+
+			if (this.timeToWake < o.timeToWake)
+				return -1;
+
+			return 0;
+		}
+
+		/**
+		 * The thread waiting on waitUntil() method.
+		 */
+		KThread waiter;
+
+		/**
+		 * The time after which it should be waken.
+		 */
+		long timeToWake;
+
 	}
 }

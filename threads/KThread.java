@@ -2,6 +2,8 @@ package nachos.threads;
 
 import nachos.machine.*;
 
+import static nachos.threads.ThreadedKernel.alarm;
+
 /**
  * A KThread is a thread that can be used to execute Nachos kernel code. Nachos
  * allows multiple threads to run concurrently.
@@ -452,9 +454,13 @@ public class KThread {
 		c0.setName("Child");
 
 		p0.fork();
-		c0.fork();
-
 		p0.join();
+
+		long time = 1;
+
+		ThreadedKernel.alarm.waitUntil(time);
+
+		c0.fork();
 		c0.join();
 
 
