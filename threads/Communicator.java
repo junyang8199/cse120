@@ -14,6 +14,12 @@ public class Communicator {
 	 * Allocate a new communicator.
 	 */
 	public Communicator() {
+		mutex = new Lock();
+		listenersCome = new Condition(mutex);
+		speakersCome = new Condition(mutex);
+		buffer = 0;
+		speakerCount = 0;
+		listenerCount = 0;
 	}
 
 	/**
@@ -27,6 +33,21 @@ public class Communicator {
 	 * @param word the integer to transfer.
 	 */
 	public void speak(int word) {
+		mutex.acquire();
+
+		while (listenerCount < 1) {
+			listenersCome.sleep();
+		}
+		/**
+		 * Multiple speakers may come and wait, so only when a speaker has woken
+		 * by a listening can it put bits into the buffer.
+		 */
+		speakerCount++;
+		buffer = word;
+		speakersCome.wake();
+		listenerCount--;
+
+		mutex.release();
 	}
 
 	/**
@@ -36,6 +57,44 @@ public class Communicator {
 	 * @return the integer transferred.
 	 */
 	public int listen() {
-		return 0;
+		mutex.acquire();
+
+		listenerCount++;
+		listenersCome.wake();
+		while (speakerCount < 1) {
+			listenersCome.sleep();
+		}
+		speakerCount--;
+
+		mutex.release();
+
+		return buffer;
 	}
+
+	private Lock mutex;
+
+	/**
+	 * Speakers wait on this condition and Listens signal this condition.
+	 */
+	private Condition listenersCome;
+
+	/**
+	 * Listeners wait on this condition and Speakers signal this condition.
+	 */
+	private Condition speakersCome;
+
+	/**
+	 * A buffer to pass content from speakers to listeners.
+	 */
+	private int buffer;
+
+	/**
+	 * A state variable, showing the number of current speakers.
+	 */
+	private int speakerCount;
+
+	/**
+	 * A state variable, showing the number of current listeners.
+	 */
+	private int listenerCount;
 }
