@@ -95,14 +95,18 @@ public class Communicator {
 	 */
 	public static void selfTest() {
 		System.out.println("Testing Communicator");
+
 		Communicator c = new Communicator();
 		new KThread(new Speaker(c)).setName("Speaker").fork();
+
 		for (int i = 0; i < 5; ++i) {
 			System.out.println("listener listening: " + i);
 			int x = c.listen();
 			System.out.println("listener listened, word = " + x);
 			//KThread.yield();
 		}
+
+		System.out.println("End of testing Communicator");
 	}
 
 

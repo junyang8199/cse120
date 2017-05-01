@@ -432,7 +432,7 @@ public class KThread {
 			for (int i = 0; i < 5; i++) {
 				System.out.println("*** awesome thread " + which + " looped " + i
 						+ " times");
-				currentThread.yield();
+				KThread.yield();
 			}
 		}
 
@@ -445,23 +445,23 @@ public class KThread {
 	public static void selfTest() {
 		Lib.debug(dbgThread, "Enter KThread.selfTest");
 
-		//new KThread(new PingTest(0)).setName("forked thread").fork();
+		new KThread(new PingTest(0)).setName("forked thread").fork();
 		//new PingTest(1).run();
 
-		KThread p0 = new KThread(new PingTest(0));
-		KThread c0 = new KThread(new PingTest(1));
-		p0.setName("parent");
-		c0.setName("Child");
+		//KThread p0 = new KThread(new PingTest(0));
+		//KThread c0 = new KThread(new PingTest(1));
+		//p0.setName("parent");
+		//c0.setName("Child");
 
-		p0.fork();
-		p0.join();
+		//p0.fork();
+		//p0.join();
 
-		long time = 1;
+		//long time = 1;
 
-		ThreadedKernel.alarm.waitUntil(time);
+		//ThreadedKernel.alarm.waitUntil(time);
 
-		c0.fork();
-		c0.join();
+		//c0.fork();
+		//c0.join();
 
 
 
