@@ -2,6 +2,8 @@ package nachos.threads;
 
 import nachos.machine.*;
 
+import java.util.LinkedList;
+
 /**
  * A <i>communicator</i> allows threads to synchronously exchange 32-bit
  * messages. Multiple threads can be waiting to <i>speak</i>, and multiple
@@ -17,7 +19,7 @@ public class Communicator {
 		mutex = new Lock();
 		listenersCome = new Condition(mutex);
 		speakersCome = new Condition(mutex);
-		buffer = 0;
+		buffer = new LinkedList<Integer>();
 		speakerCount = 0;
 		listenerCount = 0;
 	}
@@ -35,16 +37,14 @@ public class Communicator {
 	public void speak(int word) {
 		mutex.acquire();
 
+		speakerCount++;
+		buffer.add(word);
+		speakersCome.wake();
 		while (listenerCount < 1) {
+			Lib.debug(mySignal, "No listener. Speaker goes to sleep.");
 			listenersCome.sleep();
 		}
-		/**
-		 * Multiple speakers may come and wait, so only when a speaker has woken
-		 * by a listening can it put bits into the buffer.
-		 */
-		speakerCount++;
-		buffer = word;
-		speakersCome.wake();
+		//Lib.debug(mySignal, "Speaker is returning.");
 		listenerCount--;
 
 		mutex.release();
@@ -62,14 +62,49 @@ public class Communicator {
 		listenerCount++;
 		listenersCome.wake();
 		while (speakerCount < 1) {
-			listenersCome.sleep();
+			Lib.debug(mySignal, "No speaker. Listener goes to sleep.");
+			speakersCome.sleep();
 		}
+		//Lib.debug(mySignal, "Listener is returning");
 		speakerCount--;
 
 		mutex.release();
 
-		return buffer;
+		return buffer.remove();
 	}
+
+	private static class Speaker implements Runnable {
+		Speaker(Communicator c) {
+			this.c = c;
+		}
+
+		public void run() {
+			for (int i = 0; i < 5; ++i) {
+				System.out.println("speaker speaking: " + i);
+				c.speak(i);
+				System.out.println("Speaker spoke, word = " + i);
+				//KThread.yield();
+			}
+		}
+
+		private Communicator c;
+	}
+
+	/**
+	 * Test if this module is working.
+	 */
+	public static void selfTest() {
+		System.out.println("Testing Communicator");
+		Communicator c = new Communicator();
+		new KThread(new Speaker(c)).setName("Speaker").fork();
+		for (int i = 0; i < 5; ++i) {
+			System.out.println("listener listening: " + i);
+			int x = c.listen();
+			System.out.println("listener listened, word = " + x);
+			//KThread.yield();
+		}
+	}
+
 
 	private Lock mutex;
 
@@ -86,7 +121,7 @@ public class Communicator {
 	/**
 	 * A buffer to pass content from speakers to listeners.
 	 */
-	private int buffer;
+	private LinkedList<Integer> buffer;
 
 	/**
 	 * A state variable, showing the number of current speakers.
@@ -97,4 +132,10 @@ public class Communicator {
 	 * A state variable, showing the number of current listeners.
 	 */
 	private int listenerCount;
+
+	/**
+	 * Debug flag
+	 */
+	private static final char mySignal = 'b';
+
 }
