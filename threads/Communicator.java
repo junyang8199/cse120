@@ -68,10 +68,36 @@ public class Communicator {
 		//Lib.debug(mySignal, "Listener is returning");
 		speakerCount--;
 
+		int message = buffer.remove();
 		mutex.release();
 
-		return buffer.remove();
+		return message;
 	}
+
+	/** Another implementation, only need one word buffer:
+	 * -----speaker-----
+	 * lock
+	 * while (l == 0 || s != 0)
+	 * 	sleep()
+	 * s++
+	 * l--
+	 * msg->buffer
+	 * signal listener
+	 * unlock
+	 *
+	 * -----listener-----
+	 * lock
+	 * l++
+	 * signal speaker
+	 * while (s == 0)
+	 * 	sleep
+	 * s--
+	 * buffer->msg
+	 * unlock
+	 * return msg
+	 */
+
+
 
 	private static class Speaker implements Runnable {
 		Speaker(Communicator c) {

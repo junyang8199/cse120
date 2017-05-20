@@ -309,7 +309,9 @@ public class KThread {
 
 		// Only put the parent to sleep when the child has not finished executing
 		if (status != statusFinished) {
+			//Caller's queue
 			joinWaitingThreads.waitForAccess(currentThread);
+			//Sleep current thread
 			sleep();
 		}
 
@@ -448,17 +450,17 @@ public class KThread {
 		new KThread(new PingTest(0)).setName("forked thread").fork();
 		//new PingTest(1).run();
 
-		//KThread p0 = new KThread(new PingTest(0));
+		KThread p0 = new KThread(new PingTest(0));
 		//KThread c0 = new KThread(new PingTest(1));
 		//p0.setName("parent");
 		//c0.setName("Child");
 
-		//p0.fork();
+		p0.fork();
 		//p0.join();
 
-		//long time = 1;
+		long time = 1000;
 
-		//ThreadedKernel.alarm.waitUntil(time);
+		ThreadedKernel.alarm.waitUntil(time);
 
 		//c0.fork();
 		//c0.join();
