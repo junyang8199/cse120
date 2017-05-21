@@ -458,14 +458,12 @@ public class KThread {
 		p0.fork();
 		//p0.join();
 
-		long time = 1000;
+		//long time = 1000;
 
-		ThreadedKernel.alarm.waitUntil(time);
+		//ThreadedKernel.alarm.waitUntil(time);
 
 		//c0.fork();
 		//c0.join();
-
-
 
 	}
 

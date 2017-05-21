@@ -26,7 +26,19 @@ public class UserProcess {
 		int numPhysPages = Machine.processor().getNumPhysPages();
 		pageTable = new TranslationEntry[numPhysPages];
 		for (int i = 0; i < numPhysPages; i++)
-			pageTable[i] = new TranslationEntry(i, i, true, false, false, false);
+			pageTable[i] = new TranslationEntry
+					(i, i, true, false, false, false);
+
+		openFiles = new OpenFile[maxOpenFile];
+
+		//Stand input and stand output of this process.
+		stdin = UserKernel.console.openForReading();
+		stdout = UserKernel.console.openForWriting();
+
+		//A process's file descriptors 0 and 1 must refer to stdin and stdout.
+		openFiles[0] = stdin;
+		openFiles[1] = stdout;
+
 	}
 
 	/**
@@ -343,6 +355,162 @@ public class UserProcess {
 		return 0;
 	}
 
+	/**
+	 * Handle the creat(char *name) system call.
+	 */
+	private int handleCreat(int vaddr_nameStart) {
+		//Read the name, transfer virtual address to physical address.
+		String fileName = readVirtualMemoryString(vaddr_nameStart, maxArgLen);
+
+		//Check if the file name is valid.
+		if (fileName == null || fileName.length() == 0) {
+			return -1;
+		}
+
+		//Find a descriptor for this new file.
+		int descriptor = findDescriptor();
+		if (descriptor == -1) {
+			return -1;
+		}
+
+		//Open the file. If it doesn't exist, create one.
+		OpenFile newFile = ThreadedKernel.fileSystem.open(fileName, true);
+
+		//Check if the creation is successful.
+		if (newFile == null) {
+			return -1;
+		} else {
+			openFiles[descriptor] = newFile;
+			return descriptor;
+		}
+	}
+
+	/** Find an descriptor. If no more available, retuern -1. **/
+	private int findDescriptor() {
+		for (int i = 0; i < maxOpenFile; i++) {
+			if (openFiles[i] == null) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * Handle the open(char *name) system call.
+	 */
+	private int handleOpen(int vaddr_nameStart) {
+		//Read the name, transfer virtual address to physical address.
+		String fileName = readVirtualMemoryString(vaddr_nameStart, maxArgLen);
+
+		//Check if the file name is valid.
+		if (fileName == null || fileName.length() == 0) {
+			return -1;
+		}
+
+		//Find a descriptor for this new file.
+		int descriptor = findDescriptor();
+		if (descriptor == -1) {
+			return -1;
+		}
+
+		//Open the file. If it doesn't exist, return null.
+		OpenFile newFile = ThreadedKernel.fileSystem.open(fileName, true);
+
+		//Check if the creation is successful.
+		if (newFile == null) {
+			return -1;
+		} else {
+			openFiles[descriptor] = newFile;
+			return descriptor;
+		}
+	}
+
+	/**
+	 * Handle the read(int fileDescriptor, void *buffer, int count) system call.
+	 */
+	private int handleRead(int desp, int vaddr_bufStart, int count) {
+		//Check if the file descriptor is available.
+		if (desp < 0 || desp > 15 || openFiles[desp] == null) {
+			return -1;
+		}
+
+		//Read bytes from the file into a temporary array.
+		// The file position is advanced by the read method.
+		byte temp[] = new byte[count];
+		int numByteRead = openFiles[desp].read(temp, 0, count);
+
+		//If there is no more data because the end of the file has been reached.
+		if (numByteRead <= 0) {
+			return 0;
+		}
+
+		//Write those bytes to the buffer in memory.
+		int numByteWrite = writeVirtualMemory(vaddr_bufStart, temp);
+
+		return numByteWrite;
+	}
+
+	/**
+	 * Handle the write(int fileDescriptor, void *buffer, int count) system call.
+	 */
+	private int handleWrite(int desp, int vaddr_bufStart, int count) {
+		//Check if the file descriptor is available.
+		if (desp < 0 || desp > 15 || openFiles[desp] == null) {
+			return -1;
+		}
+
+		//Read bytes from the buffer in memory into a temporary array.
+		byte temp[] = new byte[count];
+		int readNumber = readVirtualMemory(vaddr_bufStart, temp);
+		//If there's nothing to read in the buffer.
+		if(readNumber <= 0)
+			return 0;
+
+		//Write those bytes into the file.
+		//The file position is advanced by the write method.
+		int numByteWrite = openFiles[desp].write(temp, 0, count);
+
+		//Error. Did not finish writing.
+		if(numByteWrite < count)
+			return -1;
+
+		return numByteWrite;
+	}
+
+	/**
+	 * Handle the close(int fileDescriptor) system call.
+	 */
+	private int handleClose(int desp) {
+		//Check if the file descriptor is available.
+		if (desp < 0 || desp > 15 || openFiles[desp] == null) {
+			return -1;
+		}
+
+		//Close this file and release any associated system resources.
+		openFiles[desp].close();
+		openFiles[desp] = null;
+
+		return 0;
+	}
+
+	/**
+	 * Handle the close(int fileDescriptor) system call.
+	 */
+	private int handleUnlink(int vaddr_nameStart) {
+		//Read the name, transfer virtual address to physical address.
+		String fileName = readVirtualMemoryString(vaddr_nameStart, maxArgLen);
+
+		if (fileName == null) {
+			return 0;
+		}
+
+		if(ThreadedKernel.fileSystem.remove(fileName)) {
+			return 0;
+		} else {
+			return -1;
+		}
+	}
+
 	private static final int syscallHalt = 0, syscallExit = 1, syscallExec = 2,
 			syscallJoin = 3, syscallCreate = 4, syscallOpen = 5,
 			syscallRead = 6, syscallWrite = 7, syscallClose = 8,
@@ -411,13 +579,32 @@ public class UserProcess {
 	 */
 	public int handleSyscall(int syscall, int a0, int a1, int a2, int a3) {
 		switch (syscall) {
-		case syscallHalt:
-			return handleHalt();
+			case syscallHalt:
+				return handleHalt();
 
-		default:
+			case syscallCreate:
+				return handleCreat(a0);
+
+			case syscallOpen:
+				return handleOpen(a0);
+
+			case syscallRead:
+				return handleRead(a0, a1, a2);
+
+			case syscallWrite:
+				return handleWrite(a0, a1, a2);
+
+			case syscallClose:
+				return handleClose(a0);
+
+			case syscallUnlink:
+				return handleUnlink(a0);
+
+			default:
 			Lib.debug(dbgProcess, "Unknown syscall " + syscall);
 			Lib.assertNotReached("Unknown system call!");
 		}
+
 		return 0;
 	}
 
@@ -468,4 +655,20 @@ public class UserProcess {
 	private static final int pageSize = Processor.pageSize;
 
 	private static final char dbgProcess = 'a';
+
+	/** The maximum length of strings passed as arguments to system calls
+	 * is 256 bytes.
+	 */
+	private static final int maxArgLen = 256;
+
+	/** A Process can have at most 16 files opened concurrently. **/
+	private static final int maxOpenFile = 16;
+
+	/** Files opened by this process. **/
+	private OpenFile[] openFiles;
+
+	/** Stand input and stand output of this process. **/
+	private OpenFile stdin;
+
+	private OpenFile stdout;
 }
