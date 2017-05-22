@@ -139,19 +139,37 @@ public class UserProcess {
 	 * @return the number of bytes successfully transferred.
 	 */
 	public int readVirtualMemory(int vaddr, byte[] data, int offset, int length) {
+		//Check if arguments are valid.
 		Lib.assertTrue(offset >= 0 && length >= 0
 				&& offset + length <= data.length);
 
+		//Check if this reading exceeds the process's address space.
+		//If it exceeds, the reading is illegal, return 0.
+		int firstVPN = Processor.pageFromAddress(vaddr);
+		int lastVPN = Processor.pageFromAddress(vaddr + length);
+		if (firstVPN < 0 || lastVPN > numPages) {
+			return 0;
+		}
+
+		//Get the reference of physical memory array.
 		byte[] memory = Machine.processor().getMemory();
 
-		// for now, just assume that virtual addresses equal physical addresses
-		if (vaddr < 0 || vaddr >= memory.length)
-			return 0;
+		//Read data from physical memory to the data array.
+		//Virtual address in the transfer is continuous, physical is not.
+		//Virtual memory -> page table -> physical memory -> memory array
+		int readBytes = 0;
+		while (readBytes < length) {
+			int vaddrStart = vaddr + readBytes;
+			int vpn = Processor.pageFromAddress(vaddrStart);
+			int pagePosition = Processor.offsetFromAddress(vaddrStart);
+			int bytesToRead = Math.min(pageSize - pagePosition, length - readBytes);
+			int phyaddrStart = pageTable[vpn].ppn * pageSize + pagePosition;
+			System.arraycopy(memory, phyaddrStart, data,
+					offset + readBytes, bytesToRead);
+			readBytes += bytesToRead;
+		}
 
-		int amount = Math.min(length, memory.length - vaddr);
-		System.arraycopy(memory, vaddr, data, offset, amount);
-
-		return amount;
+		return readBytes;
 	}
 
 	/**
@@ -181,19 +199,37 @@ public class UserProcess {
 	 * @return the number of bytes successfully transferred.
 	 */
 	public int writeVirtualMemory(int vaddr, byte[] data, int offset, int length) {
+		//Check if arguments are valid.
 		Lib.assertTrue(offset >= 0 && length >= 0
 				&& offset + length <= data.length);
 
+		//Check if this writing exceeds the process's address space.
+		//If it exceeds, the writing is illegal, return 0.
+		int firstVPN = Processor.pageFromAddress(vaddr);
+		int lastVPN = Processor.pageFromAddress(vaddr + length);
+		if (firstVPN < 0 || lastVPN > numPages) {
+			return 0;
+		}
+
+		//Get the reference of physical memory array.
 		byte[] memory = Machine.processor().getMemory();
 
-		// for now, just assume that virtual addresses equal physical addresses
-		if (vaddr < 0 || vaddr >= memory.length)
-			return 0;
+		//Write data from the data array to physical memory.
+		//Virtual address in the transfer is continuous, physical is not.
+		//Virtual memory -> page table -> physical memory -> memory array
+		int writeBytes = 0;
+		while (writeBytes < length) {
+			int vaddrStart = vaddr + writeBytes;
+			int vpn = Processor.pageFromAddress(vaddrStart);
+			int pagePosition = Processor.offsetFromAddress(vaddrStart);
+			int bytesToWrite = Math.min(pageSize - pagePosition, length - writeBytes);
+			int phyaddrStart = pageTable[vpn].ppn * pageSize + pagePosition;
+			System.arraycopy(data, offset + writeBytes, memory,
+					phyaddrStart, bytesToWrite);
+			writeBytes += bytesToWrite;
+		}
 
-		int amount = Math.min(length, memory.length - vaddr);
-		System.arraycopy(data, offset, memory, vaddr, amount);
-
-		return amount;
+		return writeBytes;
 	}
 
 	/**
@@ -291,13 +327,29 @@ public class UserProcess {
 	 * @return <tt>true</tt> if the sections were successfully loaded.
 	 */
 	protected boolean loadSections() {
-		if (numPages > Machine.processor().getNumPhysPages()) {
+		//Access global resource--free pages list, acquire the lock
+		UserKernel.memoryLock.acquire();
+
+		//Check if there are sufficient free physical pages.
+		if (numPages > UserKernel.freePages.size()) {
 			coff.close();
 			Lib.debug(dbgProcess, "\tinsufficient physical memory");
 			return false;
 		}
 
-		// load sections
+		//Available physical pages are sufficient, create a page table.
+		//Each vpn of this process is assigned with a ppn.
+		pageTable = new TranslationEntry[numPages];
+		for (int i = 0; i < numPages; i++) {
+			pageTable[i] = new TranslationEntry(i, UserKernel.freePages.remove(),
+					true, false, false, false);
+		}
+
+		//End of managing the free pages list, release the lock.
+		UserKernel.memoryLock.release();
+
+		//Load sections
+		//Page allocation is based on each section's first vpn.
 		for (int s = 0; s < coff.getNumSections(); s++) {
 			CoffSection section = coff.getSection(s);
 
@@ -307,8 +359,12 @@ public class UserProcess {
 			for (int i = 0; i < section.getLength(); i++) {
 				int vpn = section.getFirstVPN() + i;
 
-				// for now, just assume virtual addresses=physical addresses
-				section.loadPage(i, vpn);
+				//Mark the page as read-only if this section is ready-only.
+				pageTable[vpn].readOnly = section.isReadOnly();
+
+				//Find the ppn in the page table using vpn as key.
+				//Load content in that physical page.
+				section.loadPage(i, pageTable[vpn].ppn);
 			}
 		}
 

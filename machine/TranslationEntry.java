@@ -62,7 +62,7 @@ public final class TranslationEntry {
 	public boolean valid;
 
 	/**
-	 * If this flag is <tt>true</tt>, the user pprogram is not allowed to modify
+	 * If this flag is <tt>true</tt>, the user program is not allowed to modify
 	 * the contents of this virtual page.
 	 */
 	public boolean readOnly;
