@@ -39,6 +39,11 @@ public class UserKernel extends ThreadedKernel {
 		}
 
 		memoryLock = new Lock();
+
+		nextPID = 0;
+		numProcess = 0;
+
+		numProsLock = new Lock();
 	}
 
 	/**
@@ -119,12 +124,38 @@ public class UserKernel extends ThreadedKernel {
 	}
 
 	/**
+	 * Get the number of available physical pages.
+	 */
+	protected static int freePagesNum() {
+		//moemoryLock should be held here.
+		return freePages.size();
+	}
+
+	/**
+	 * Remove one page from the free pages list.
+	 */
+	protected static int getPage() {
+		//moemoryLock should be held here.
+		return freePages.remove();
+	}
+
+	/**
+	 * Add one page back to the free pages list.
+	 */
+	protected static void addPage(int pageNumber) {
+		//moemoryLock should be held here.
+		freePages.add(pageNumber);
+	}
+
+	/**
 	 * Get the next PID for a new process.
 	 */
 	protected static int getNextPID() {
 		int newPID = 0;
 		boolean inStatus=Machine.interrupt().disable();
+
 		newPID = nextPID++;
+
 		Machine.interrupt().restore(inStatus);
 
 		return newPID;
@@ -134,8 +165,10 @@ public class UserKernel extends ThreadedKernel {
 	 * Increase the number of live processes.
 	 */
 	protected static void increPros() {
-		boolean inStatus=Machine.interrupt().disable();
+		boolean inStatus = Machine.interrupt().disable();
+
 		numProcess++;
+
 		Machine.interrupt().restore(inStatus);
 	}
 
@@ -144,7 +177,9 @@ public class UserKernel extends ThreadedKernel {
 	 */
 	protected static void decrePros() {
 		boolean inStatus=Machine.interrupt().disable();
+
 		numProcess--;
+
 		Machine.interrupt().restore(inStatus);
 	}
 
@@ -152,6 +187,7 @@ public class UserKernel extends ThreadedKernel {
 	 * Get the number of live processes.
 	 */
 	protected static int getNumPros() {
+		//numProsLock should be held here.
 		return numProcess;
 	}
 
@@ -162,7 +198,7 @@ public class UserKernel extends ThreadedKernel {
 	private static Coff dummy1 = null;
 
 	/** A global linked list of free physical pages. */
-	protected static LinkedList<Integer> freePages;
+	private static LinkedList<Integer> freePages;
 
 	/** A lock used to access the page list synchronically. */
 	protected static Lock memoryLock;

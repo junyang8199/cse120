@@ -26,9 +26,6 @@ public class UserProcess {
 	public UserProcess() {
 		int numPhysPages = Machine.processor().getNumPhysPages();
 		pageTable = new TranslationEntry[numPhysPages];
-		for (int i = 0; i < numPhysPages; i++)
-			pageTable[i] = new TranslationEntry
-					(i, 0, false, false, false, false);
 
 		openFiles = new OpenFile[maxOpenFile];
 
@@ -132,6 +129,7 @@ public class UserProcess {
 	 * @return the number of bytes successfully transferred.
 	 */
 	public int readVirtualMemory(int vaddr, byte[] data) {
+
 		return readVirtualMemory(vaddr, data, 0, data.length);
 	}
 
@@ -192,6 +190,7 @@ public class UserProcess {
 	 * @return the number of bytes successfully transferred.
 	 */
 	public int writeVirtualMemory(int vaddr, byte[] data) {
+
 		return writeVirtualMemory(vaddr, data, 0, data.length);
 	}
 
@@ -342,17 +341,16 @@ public class UserProcess {
 		UserKernel.memoryLock.acquire();
 
 		//Check if there are sufficient free physical pages.
-		if (numPages > UserKernel.freePages.size()) {
+		if (numPages > UserKernel.freePagesNum()) {
 			coff.close();
 			Lib.debug(dbgProcess, "\tinsufficient physical memory");
 			return false;
 		}
 
-		//Available physical pages are sufficient, create a page table.
+		//Available physical pages are sufficient, fill in the  page table.
 		//Each vpn of this process is assigned with a ppn.
-		pageTable = new TranslationEntry[numPages];
 		for (int i = 0; i < numPages; i++) {
-			pageTable[i] = new TranslationEntry(i, UserKernel.freePages.remove(),
+			pageTable[i] = new TranslationEntry(i, UserKernel.getPage(),
 					true, false, false, false);
 		}
 
@@ -360,20 +358,20 @@ public class UserProcess {
 		UserKernel.memoryLock.release();
 
 		//Load sections
-		//Page allocation is based on each section's first vpn.
+		//For the Coff object, load all its Coff Sections.
 		for (int s = 0; s < coff.getNumSections(); s++) {
 			CoffSection section = coff.getSection(s);
 
 			Lib.debug(dbgProcess, "\tinitializing " + section.getName()
 					+ " section (" + section.getLength() + " pages)");
 
+			//For each CoffSection object, load all its pages.
 			for (int i = 0; i < section.getLength(); i++) {
 				int vpn = section.getFirstVPN() + i;
 
 				//Mark the page as read-only if this section is ready-only.
 				pageTable[vpn].readOnly = section.isReadOnly();
 
-				//Find the ppn in the page table using vpn as key.
 				//Load content in that physical page.
 				section.loadPage(i, pageTable[vpn].ppn);
 			}
@@ -392,8 +390,9 @@ public class UserProcess {
 			TranslationEntry entry = pageTable[i];
 
 			if (entry.valid) {
-				UserKernel.freePages.add(entry.ppn);
+				UserKernel.addPage(entry.ppn);
 			}
+			pageTable[i] = null;
 		}
 
 		UserKernel.memoryLock.release();
@@ -624,7 +623,7 @@ public class UserProcess {
 
 		//Read the file name.
 		String fileName = readVirtualMemoryString(fileAddr, maxArgLen);
-		if (fileName == null || fileName.length() == 0 ) {
+		if (fileName == null) {
 			return -1;
 		}
 		//File name must include the ".coff" extension.
@@ -824,6 +823,15 @@ public class UserProcess {
 			case syscallUnlink:
 				return handleUnlink(a0);
 
+			case syscallExec:
+				return handleExec(a0, a1, a2);
+
+			case syscallJoin:
+				return handleJoin(a0, a1);
+
+			case syscallExit:
+				return handleExit(a0);
+
 			default:
 			Lib.debug(dbgProcess, "Unknown syscall " + syscall);
 			Lib.assertNotReached("Unknown system call!");
@@ -918,7 +926,7 @@ public class UserProcess {
 	/** The thread of this process. */
 	private UThread thread;
 
-	/** The exit status of this process.  */
+	/** The exit status of this process. */
 	private int exitStatus;
 
 	/** If the process has exited normally. */
