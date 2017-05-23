@@ -389,7 +389,7 @@ public class UserProcess {
 		for (int i = 0; i < pageTable.length; i++) {
 			TranslationEntry entry = pageTable[i];
 
-			if (entry.valid) {
+			if (entry != null && entry.valid) {
 				UserKernel.addPage(entry.ppn);
 			}
 			pageTable[i] = null;
@@ -628,7 +628,7 @@ public class UserProcess {
 		}
 		//File name must include the ".coff" extension.
 		String extension = fileName.substring(fileName.length()-5, fileName.length());
-		if (! extension.equals(".coff")) {
+		if (!extension.equals(".coff")) {
 			return -1;
 		}
 
@@ -652,7 +652,7 @@ public class UserProcess {
 		childProcess.setParent(this);
 
 		//Execute the child program.
-		if (!childProcess.execute(fileName, args)) {
+		if (childProcess.execute(fileName, args)) {
 			return childProcess.pid;
 		} else {
 			return -1;
