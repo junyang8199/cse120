@@ -416,7 +416,10 @@ public class UserProcess {
 	 */
 	private int handleHalt() {
 
-		Machine.halt();
+		//Only root process can halt.
+		if (pid == 0) {
+			Machine.halt();
+		}
 
 		Lib.assertNotReached("Machine.halt() did not halt machine!");
 		return 0;
@@ -430,13 +433,17 @@ public class UserProcess {
 		String fileName = readVirtualMemoryString(vaddr_nameStart, maxArgLen);
 
 		//Check if the file name is valid.
-		if (fileName == null || fileName.length() == 0) {
+		if (fileName == null) {
+			Lib.debug(dbgProcess,
+					"Create fail: could not read file name from virtual memory.");
 			return -1;
 		}
 
 		//Find a descriptor for this new file.
 		int descriptor = findDescriptor();
 		if (descriptor == -1) {
+			Lib.debug(dbgProcess,
+					"Create fail: file descriptors are insufficient.");
 			return -1;
 		}
 
@@ -445,6 +452,8 @@ public class UserProcess {
 
 		//Check if the creation is successful.
 		if (newFile == null) {
+			Lib.debug(dbgProcess,
+					"Create fail: could not open file name from file system.");
 			return -1;
 		} else {
 			openFiles[descriptor] = newFile;
@@ -452,9 +461,9 @@ public class UserProcess {
 		}
 	}
 
-	/** Find an descriptor. If no more available, retuern -1. **/
+	/** Find an descriptor. If no more available, return -1. **/
 	private int findDescriptor() {
-		for (int i = 0; i < maxOpenFile; i++) {
+		for (int i = 2; i < maxOpenFile; i++) {
 			if (openFiles[i] == null) {
 				return i;
 			}
@@ -470,21 +479,27 @@ public class UserProcess {
 		String fileName = readVirtualMemoryString(vaddr_nameStart, maxArgLen);
 
 		//Check if the file name is valid.
-		if (fileName == null || fileName.length() == 0) {
+		if (fileName == null ) {
+			Lib.debug(dbgProcess,
+					"Open fail: file descriptors are insufficient.");
 			return -1;
 		}
 
 		//Find a descriptor for this new file.
 		int descriptor = findDescriptor();
 		if (descriptor == -1) {
+			Lib.debug(dbgProcess,
+					"Open fail: file descriptors are insufficient.");
 			return -1;
 		}
 
 		//Open the file. If it doesn't exist, return null.
-		OpenFile newFile = ThreadedKernel.fileSystem.open(fileName, true);
+		OpenFile newFile = ThreadedKernel.fileSystem.open(fileName, false);
 
 		//Check if the creation is successful.
 		if (newFile == null) {
+			Lib.debug(dbgProcess,
+					"Open fail: could not open file name from file system.");
 			return -1;
 		} else {
 			openFiles[descriptor] = newFile;
@@ -699,9 +714,6 @@ public class UserProcess {
 
 		return 0;
 	}
-
-
-
 
 	private static final int syscallHalt = 0, syscallExit = 1, syscallExec = 2,
 			syscallJoin = 3, syscallCreate = 4, syscallOpen = 5,
