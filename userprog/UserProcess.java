@@ -653,7 +653,7 @@ public class UserProcess {
 
 		//Execute the child program.
 		if (childProcess.execute(fileName, args)) {
-			return childProcess.pid;
+			return childProcess.getPID();
 		} else {
 			return -1;
 		}
@@ -666,7 +666,7 @@ public class UserProcess {
 		//Find the child process by PID.
 		UserProcess childProcess = null;
 		for (UserProcess child : children) {
-			if (child.pid == childPID) {
+			if (child.getPID() == childPID) {
 				childProcess = child;
 				break;
 			}
@@ -682,15 +682,17 @@ public class UserProcess {
 			childProcess.thread.join();
 		}
 
-
-
 		//Store the exit status of the child process.
 		int childExitStatus = childProcess.exitStatus;
 		byte[] status = new byte[4];
 		Lib.bytesFromInt(status, 0, childExitStatus);
 		int statWriteBytes = writeVirtualMemory(statusAddr, status);
+		//Writing fails
+		if (statWriteBytes != 4) {
+			return -1;
+		}
 		//Child exited normally.
-		if (statWriteBytes == 4 && childProcess.exitNormally) {
+		if (childProcess.exitNormally) {
 			return 1;
 		} else {
 		//Child exited as a result of an unhandled exception.
@@ -724,11 +726,13 @@ public class UserProcess {
 		//Checking if it's the last one and decreasing the process number
 		//should be done synchronously.
 		UserKernel.numProsLock.acquire();
+
 		int leftProsNum = UserKernel.getNumPros();
 		if (leftProsNum == 1) {
 			Kernel.kernel.terminate();
 		}
 		UserKernel.decrePros();
+
 		UserKernel.numProsLock.release();
 
 		return 0;
