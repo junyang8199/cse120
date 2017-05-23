@@ -386,6 +386,17 @@ public class UserProcess {
 	 * Release any resources allocated by <tt>loadSections()</tt>.
 	 */
 	protected void unloadSections() {
+		UserKernel.memoryLock.acquire();
+
+		for (int i = 0; i < pageTable.length; i++) {
+			TranslationEntry entry = pageTable[i];
+
+			if (entry.valid) {
+				UserKernel.freePages.add(entry.ppn);
+			}
+		}
+
+		UserKernel.memoryLock.release();
 	}
 
 	/**
@@ -511,7 +522,7 @@ public class UserProcess {
 	 * Handle the read(int fileDescriptor, void *buffer, int count) system call.
 	 */
 	private int handleRead(int desp, int vaddr_bufStart, int count) {
-		//Check if the file descriptor is available.
+		//Check if the file descriptor is valid.
 		if (desp < 0 || desp > 15 || openFiles[desp] == null) {
 			return -1;
 		}
@@ -521,13 +532,21 @@ public class UserProcess {
 		byte temp[] = new byte[count];
 		int numByteRead = openFiles[desp].read(temp, 0, count);
 
-		//If there is no more data because the end of the file has been reached.
-		if (numByteRead <= 0) {
+		//If reading fails.
+		if (numByteRead < 0) {
+			return -1;
+		}
+		if (numByteRead == 0) {
 			return 0;
 		}
 
 		//Write those bytes to the buffer in memory.
-		int numByteWrite = writeVirtualMemory(vaddr_bufStart, temp);
+		int numByteWrite = writeVirtualMemory(vaddr_bufStart, temp, 0, numByteRead);
+
+		//If writing fails.
+		if (numByteWrite < numByteRead) {
+			return -1;
+		}
 
 		return numByteWrite;
 	}
@@ -576,16 +595,17 @@ public class UserProcess {
 	}
 
 	/**
-	 * Handle the close(int fileDescriptor) system call.
+	 * Handle the unlink(char *name) system call.
 	 */
 	private int handleUnlink(int vaddr_nameStart) {
 		//Read the name, transfer virtual address to physical address.
 		String fileName = readVirtualMemoryString(vaddr_nameStart, maxArgLen);
 
-		if (fileName == null || fileName.length() == 0) {
+		if (fileName == null) {
 			return 0;
 		}
 
+		//Delete the file from file system.
 		if(ThreadedKernel.fileSystem.remove(fileName)) {
 			return 0;
 		} else {
