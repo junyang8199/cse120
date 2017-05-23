@@ -5,6 +5,7 @@ import nachos.threads.*;
 import nachos.userprog.*;
 
 import java.io.EOFException;
+import java.util.LinkedList;
 
 /**
  * Encapsulates the state of a user process that is not contained in its user
@@ -27,7 +28,7 @@ public class UserProcess {
 		pageTable = new TranslationEntry[numPhysPages];
 		for (int i = 0; i < numPhysPages; i++)
 			pageTable[i] = new TranslationEntry
-					(i, i, true, false, false, false);
+					(i, 0, false, false, false, false);
 
 		openFiles = new OpenFile[maxOpenFile];
 
@@ -39,6 +40,15 @@ public class UserProcess {
 		openFiles[0] = stdin;
 		openFiles[1] = stdout;
 
+		//Gdt a pid from UserKernel.
+		pid = UserKernel.getNextPID();
+
+		//Set parent and children processes.
+		parent = null;
+		children = new LinkedList<UserProcess>();
+
+		//Increase the number of current live processes.
+		UserKernel.increPros();
 	}
 
 	/**
@@ -64,7 +74,8 @@ public class UserProcess {
 		if (!load(name, args))
 			return false;
 
-		new UThread(this).setName(name).fork();
+		thread = new UThread(this);
+		thread.setName(name).fork();
 
 		return true;
 	}
@@ -556,7 +567,7 @@ public class UserProcess {
 		//Read the name, transfer virtual address to physical address.
 		String fileName = readVirtualMemoryString(vaddr_nameStart, maxArgLen);
 
-		if (fileName == null) {
+		if (fileName == null || fileName.length() == 0) {
 			return 0;
 		}
 
@@ -566,6 +577,131 @@ public class UserProcess {
 			return -1;
 		}
 	}
+
+	/**
+	 * Handle the exec(char *file, int argc, char *argv[]) system call.
+	 */
+	private int handleExec(int fileAddr, int argc, int argAddr) {
+		// args must be non-negative.
+		if (argc < 0) {
+			return -1;
+		}
+
+		//Read the file name.
+		String fileName = readVirtualMemoryString(fileAddr, maxArgLen);
+		if (fileName == null || fileName.length() == 0 ) {
+			return -1;
+		}
+		//File name must include the ".coff" extension.
+		String extension = fileName.substring(fileName.length()-5, fileName.length());
+		if (! extension.equals(".coff")) {
+			return -1;
+		}
+
+		//Read arguments.
+		String[] args = new String[argc];
+		for (int i = 0; i < argc; i++) {
+			//Read the address of the argument.
+			byte[] address = new byte[4];
+			if (readVirtualMemory(argAddr+i*4, address) == 4) {
+				//Read the argument value.
+				args[i] = readVirtualMemoryString
+						(Lib.bytesToInt(address, 0), maxArgLen);
+			} else {
+				return -1;
+			}
+		}
+
+		//Create a new process.
+		UserProcess childProcess = UserProcess.newUserProcess();
+		children.add(childProcess);
+		childProcess.setParent(this);
+
+		//Execute the child program.
+		if (!childProcess.execute(fileName, args)) {
+			return childProcess.pid;
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * Handle the join(int processID, int *status) system call.
+	 */
+	private int handleJoin(int childPID, int statusAddr) {
+		//Find the child process by PID.
+		UserProcess childProcess = null;
+		for (UserProcess child : children) {
+			if (child.pid == childPID) {
+				childProcess = child;
+				break;
+			}
+		}
+		if (childProcess == null) {
+			return -1;
+		}
+
+		//Let the child process join.
+		if (childProcess.thread == null) {
+			return -1;
+		} else {
+			childProcess.thread.join();
+		}
+
+
+
+		//Store the exit status of the child process.
+		int childExitStatus = childProcess.exitStatus;
+		byte[] status = new byte[4];
+		Lib.bytesFromInt(status, 0, childExitStatus);
+		int statWriteBytes = writeVirtualMemory(statusAddr, status);
+		//Child exited normally.
+		if (statWriteBytes == 4 && childProcess.exitNormally) {
+			return 1;
+		} else {
+		//Child exited as a result of an unhandled exception.
+			return 0;
+		}
+	}
+
+	/**
+	 * Handle the exit(int status) system call.
+	 */
+	private int handleExit(int status) {
+		//Close Coff.
+		coff.close();
+
+		//Close opened files.
+		for (int i = 0; i < openFiles.length; i++) {
+			if (openFiles[i] != null) {
+				openFiles[i].close();
+				openFiles[i] = null;
+			}
+		}
+
+		//Set exit status.
+		exitStatus = status;
+		exitNormally = true;
+
+		unloadSections();
+		UThread.finish();
+
+		//The last exiting process should terminate the kernel.
+		//Checking if it's the last one and decreasing the process number
+		//should be done synchronously。
+		UserKernel.numProsLock.acquire();
+		int leftProsNum = UserKernel.getNumPros();
+		if (leftProsNum == 1) {
+			Kernel.kernel.terminate();
+		}
+		UserKernel.decrePros();
+		UserKernel.numProsLock.release();
+
+		return 0;
+	}
+
+
+
 
 	private static final int syscallHalt = 0, syscallExit = 1, syscallExec = 2,
 			syscallJoin = 3, syscallCreate = 4, syscallOpen = 5,
@@ -692,6 +828,16 @@ public class UserProcess {
 		}
 	}
 
+	/** Get the pid of this process. */
+	protected int getPID() {
+		return pid;
+	}
+
+	/** Set parent for this process. */
+	protected void setParent(UserProcess parentProcess) {
+		parent = parentProcess;
+	}
+
 	/** The program being run by this process. */
 	protected Coff coff;
 
@@ -727,4 +873,22 @@ public class UserProcess {
 	private OpenFile stdin;
 
 	private OpenFile stdout;
+
+	/** PID of this process. */
+	private int pid;
+
+	/** Parent process. */
+	private UserProcess parent;
+
+	/** A list of child processes. */
+	private LinkedList<UserProcess> children;
+
+	/** The thread of this process. */
+	private UThread thread;
+
+	/** The exit status of this process.  */
+	private int exitStatus;
+
+	/** If the process has exited normally. */
+	private boolean exitNormally;
 }

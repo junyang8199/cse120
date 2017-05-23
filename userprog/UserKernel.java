@@ -118,15 +118,61 @@ public class UserKernel extends ThreadedKernel {
 		super.terminate();
 	}
 
+	/**
+	 * Get the next PID for a new process.
+	 */
+	protected static int getNextPID() {
+		int newPID = 0;
+		boolean inStatus=Machine.interrupt().disable();
+		newPID = nextPID++;
+		Machine.interrupt().restore(inStatus);
+
+		return newPID;
+	}
+
+	/**
+	 * Increase the number of live processes.
+	 */
+	protected static void increPros() {
+		boolean inStatus=Machine.interrupt().disable();
+		numProcess++;
+		Machine.interrupt().restore(inStatus);
+	}
+
+	/**
+	 * Decrease the number of live processes.
+	 */
+	protected static void decrePros() {
+		boolean inStatus=Machine.interrupt().disable();
+		numProcess--;
+		Machine.interrupt().restore(inStatus);
+	}
+
+	/**
+	 * Get the number of live processes.
+	 */
+	protected static int getNumPros() {
+		return numProcess;
+	}
+
 	/** Globally accessible reference to the synchronized console. */
 	public static SynchConsole console;
 
 	// dummy variables to make javac smarter
 	private static Coff dummy1 = null;
 
-	/** A global linked list of free physical pages. **/
-	public static LinkedList<Integer> freePages;
+	/** A global linked list of free physical pages. */
+	protected static LinkedList<Integer> freePages;
 
-	/** A lock used to access the page list synchronically. **/
-	public static Lock memoryLock;
+	/** A lock used to access the page list synchronically. */
+	protected static Lock memoryLock;
+
+	/** A counter of process IDs. */
+	private static int nextPID;
+
+	/** Number of live processes. */
+	private static int numProcess;
+
+	/** A lock used to access the number of live processes. */
+	protected static Lock numProsLock;
 }
