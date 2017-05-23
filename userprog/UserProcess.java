@@ -722,7 +722,7 @@ public class UserProcess {
 
 		//The last exiting process should terminate the kernel.
 		//Checking if it's the last one and decreasing the process number
-		//should be done synchronously。
+		//should be done synchronously.
 		UserKernel.numProsLock.acquire();
 		int leftProsNum = UserKernel.getNumPros();
 		if (leftProsNum == 1) {
