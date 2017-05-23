@@ -4,8 +4,8 @@ int main() {
 
     // check create file
     // return new file descriptor if success, return -1 if fail
-    printf("1. create file check")
-    char *filename = "file1"
+    printf("1. create file check \n");
+    char *filename = "file1";
     int descriptor = creat(filename);
     if (descriptor == -1) {
         printf("create failed");
@@ -16,7 +16,7 @@ int main() {
     // check open file
     // can only open existed file
     // return file descriptor if success, return -1 if fail
-    printf("2. open file check")
+    printf("2. open file check \n")
     int openResult = open(filename);
     if (openResult == -1) {
         printf("open failed");
@@ -28,7 +28,7 @@ int main() {
 
     // check write file
     // return number of bytes written if success, return -1 if fail
-    printf("3. write file check")
+    printf("3. write file check \n")
     int* p = new int(1);
     void *toWrite = p;
     int writeResult = write(descriptor, toWrite, 1);
@@ -40,7 +40,7 @@ int main() {
 
     // check read file
     // return number of bytes read if success, return -1 if fail
-    printf("4. read file check")
+    printf("4. read file check \n")
     void *toRead;
     int readResult = read(descriptor, toRead, 1);
     if (readResult != 1) {
@@ -51,7 +51,7 @@ int main() {
 
     // check close
     // return 0 if success, return -1 if fail
-    printf("5. close file check")
+    printf("5. close file check \n")
     int closeResult = close(descriptor);
     if (closeResult != 0) {
         printf("close failed");
@@ -61,7 +61,7 @@ int main() {
 
     // check uplink
     // return 0 if success, return -1 if fail
-    printf("6. uplink file check")
+    printf("6. uplink file check \n")
     int uplinkResult = uplink(filename);
     if (uplinkResult == -1) {
         printf("uplink failed");
