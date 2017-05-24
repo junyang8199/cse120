@@ -724,20 +724,20 @@ public class UserProcess {
 		exitNormally = true;
 
 		unloadSections();
-		UThread.finish();
+		//UThread.finish();
 
 		//The last exiting process should terminate the kernel.
 		//Checking if it's the last one and decreasing the process number
 		//should be done synchronously.
 		UserKernel.numProsLock.acquire();
-
 		int leftProsNum = UserKernel.getNumPros();
 		if (leftProsNum == 1) {
 			Kernel.kernel.terminate();
 		}
 		UserKernel.decrePros();
-
 		UserKernel.numProsLock.release();
+
+		UThread.finish();
 
 		return 0;
 	}
