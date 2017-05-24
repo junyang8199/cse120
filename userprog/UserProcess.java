@@ -749,9 +749,6 @@ public class UserProcess {
      * Kill a created but fail to execute .coff file process.
      */
     private void killMyself() {
-        //Close Coff.
-        coff.close();
-
         //Close opened files.
         for (int i = 0; i < openFiles.length; i++) {
             if (openFiles[i] != null) {
