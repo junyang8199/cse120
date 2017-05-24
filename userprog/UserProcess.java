@@ -648,13 +648,15 @@ public class UserProcess {
 
 		//Create a new process.
 		UserProcess childProcess = UserProcess.newUserProcess();
-		children.add(childProcess);
-		childProcess.setParent(this);
 
 		//Execute the child program.
 		if (childProcess.execute(fileName, args)) {
+            children.add(childProcess);
+            childProcess.setParent(this);
 			return childProcess.getPID();
 		} else {
+		    //If the child process created fails to execute the .coff file, kill it.
+            childProcess.killMyself();
 			return -1;
 		}
 	}
@@ -742,6 +744,39 @@ public class UserProcess {
 
 		return 0;
 	}
+
+    /**
+     * Kill a created but fail to execute .coff file process.
+     */
+    private void killMyself() {
+        //Close Coff.
+        coff.close();
+
+        //Close opened files.
+        for (int i = 0; i < openFiles.length; i++) {
+            if (openFiles[i] != null) {
+                openFiles[i].close();
+                openFiles[i] = null;
+            }
+        }
+
+        exitNormally = false;
+
+        unloadSections();
+        //UThread.finish();
+
+        //The last exiting process should terminate the kernel.
+        //Checking if it's the last one and decreasing the process number
+        //should be done synchronously.
+        UserKernel.numProsLock.acquire();
+        int leftProsNum = UserKernel.getNumPros();
+        if (leftProsNum == 1) {
+            System.out.println("I'm the last process!!!!!!!");
+            Kernel.kernel.terminate();
+        }
+        UserKernel.decrePros();
+        UserKernel.numProsLock.release();
+    }
 
 	private static final int syscallHalt = 0, syscallExit = 1, syscallExec = 2,
 			syscallJoin = 3, syscallCreate = 4, syscallOpen = 5,

@@ -27,26 +27,26 @@ int main(int argc, const char* argv[]){
 	exec_return_val_1 = exec(invalid_file, argc, arg);
 	assert(exec_return_val_1 == ERROR);
 
-//	exec_return_val_1 = exec(invalid_file2, argc, arg);
-//	assert(exec_return_val_1 == ERROR);
+	exec_return_val_1 = exec(invalid_file2, argc, arg);
+	assert(exec_return_val_1 == ERROR);
 
 	exec_return_val_1 = exec(valid_file, argc, arg);
 	assert(exec_return_val_1 >= 0);
 
-//	exec_return_val_2 = exec(matmult_file, argc, arg);
-//      assert(exec_return_val_2 >= 0);
+	exec_return_val_2 = exec(matmult_file, argc, arg);
+	assert(exec_return_val_2 >= 0);
 
-    //join_return_val = join(INVALID_PID, status);
-    //	assert(join_return_val == ERROR);
+    join_return_val = join(INVALID_PID, status);
+    assert(join_return_val == ERROR);
 
 	join_return_val = join(exec_return_val_1, status);
 	assert(join_return_val == 1);
 
-//	join_return_val = join(exec_return_val_2, status);
-  //  assert(join_return_val == 1);
+    join_return_val = join(exec_return_val_2, status);
+    assert(join_return_val == 1);
 
-//	join_return_val = join(exec_return_val_2, status);
-  //  assert(join_return_val == ERROR);
+	join_return_val = join(exec_return_val_2, status);
+    assert(join_return_val == ERROR);
 
     printf("ALL TASK %d TESTS over, machine should be halt!!!!!!!!!!!!\n\n",2);
 
