@@ -48,7 +48,7 @@ int main(int argc, const char* argv[]){
 	join_return_val = join(exec_return_val_2, status);
     assert(join_return_val == ERROR);
 
-    printf("ALL TASK %d TESTS over, machie should be halt!!!!!!!!!!!!\n\n",2);
+    printf("ALL TASK %d TESTS over, machine should be halt!!!!!!!!!!!!\n\n",2);
 
 	return 0;
 }

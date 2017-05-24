@@ -171,6 +171,7 @@ public class UserKernel extends ThreadedKernel {
 		boolean inStatus = Machine.interrupt().disable();
 
 		numProcess++;
+		System.out.println("Number of process has increased to " + numProcess);
 
 		Machine.interrupt().restore(inStatus);
 	}
@@ -182,6 +183,7 @@ public class UserKernel extends ThreadedKernel {
 		boolean inStatus=Machine.interrupt().disable();
 
 		numProcess--;
+		System.out.println("Number of process has decreased to " + numProcess);
 
 		Machine.interrupt().restore(inStatus);
 	}

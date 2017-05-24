@@ -682,6 +682,10 @@ public class UserProcess {
 			childProcess.thread.join();
 		}
 
+		//Disown the child process.
+        //so that join() cannot be used on that process again.
+        children.removeFirstOccurrence(childProcess);
+
 		//Store the exit status of the child process.
 		int childExitStatus = childProcess.exitStatus;
 		byte[] status = new byte[4];
