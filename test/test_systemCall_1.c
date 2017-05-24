@@ -111,5 +111,5 @@ int main(){
 	printf("%d\n", sum);
 	printf("ALL TASK %d TESTS PASSED!!!!!!!!!!!!\n\n",1);
 
-	halt();
+	//halt();
 }

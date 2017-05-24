@@ -43,10 +43,10 @@ int main(int argc, const char* argv[]){
 	assert(join_return_val == 1);
 
 	join_return_val = join(exec_return_val_2, status);
-    assert(join_return_val == 2);
+    assert(join_return_val == 1);
 
 	join_return_val = join(exec_return_val_2, status);
-    assert(join_return_val == ERROR);
+    assert(join_return_val == 1);
 
     printf("ALL TASK %d TESTS over, machie should be halt!!!!!!!!!!!!\n\n",2);
 
