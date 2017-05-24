@@ -506,7 +506,7 @@ public class UserProcess {
 		//Open the file. If it doesn't exist, return null.
 		OpenFile newFile = ThreadedKernel.fileSystem.open(fileName, false);
 
-		//Check if the creation is successful.
+		//Check if the opening is successful.
 		if (newFile == null) {
 			Lib.debug(dbgProcess,
 					"Open fail: could not open file name from file system.");

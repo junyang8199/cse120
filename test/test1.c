@@ -1,4 +1,6 @@
-##include "syscall.h"
+#include "syscall.h"
+#include "stdlib.h"
+#include "stdio.h"
 
 int main() {
 
