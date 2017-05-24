@@ -32,21 +32,7 @@ int main(){
 	int toCompare;
 	int sum;
 
-    //Test create system call
-    char* file1 = "file1.txt";
-    char* file2 = "file2.txt";
-
-    int creat1, creat2;
-
-	creat1 = creat(file1);
-	if (creat1 == 1) {
-    	printf ("Successfully create file %c\n", file1);
-    } else {
-        printf ("failed to write character (r = %d)\n", file2);
-        exit (-1);
-    }
-	creat2 = creat(file2);
-
+	fd0 = creat("Alex.txt");
 	fd1 = creat("Max.txt");
 	fd_invalid = 5;
 
