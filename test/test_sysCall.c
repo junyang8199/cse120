@@ -6,12 +6,11 @@ int main() {
 
     //Test create system call
     char* file1 = "file1.txt";
-    char* file2 = "file2.txt";
 
     int creat1, creat2;
 
-	creat1 = creat(file1);
-	if (creat1 == 1) {
+    creat1 = creat(file1);
+    if (creat1 == 2) {
     	printf ("Successfully create file %c\n", file1);
     } else {
         printf ("failed to write character (r = %d)\n", file2);
