@@ -63,6 +63,9 @@ public class UserKernel extends ThreadedKernel {
 		} while (c != 'q');
 
 		System.out.println("");
+
+
+
 	}
 
 	/**
