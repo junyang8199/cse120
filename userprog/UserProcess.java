@@ -732,6 +732,7 @@ public class UserProcess {
 		UserKernel.numProsLock.acquire();
 		int leftProsNum = UserKernel.getNumPros();
 		if (leftProsNum == 1) {
+			System.out.println("I'm the last process!!!!!!!");
 			Kernel.kernel.terminate();
 		}
 		UserKernel.decrePros();
