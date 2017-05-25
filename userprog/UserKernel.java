@@ -26,6 +26,10 @@ public class UserKernel extends ThreadedKernel {
 
 		console = new SynchConsole(Machine.console());
 
+		memoryLock = new Lock();
+
+		numProsLock = new Lock();
+
 		int numPhysPages = Machine.processor().getNumPhysPages();
 		for (int i = 0; i < numPhysPages; i++) {
 			freePages.add(i);
@@ -200,7 +204,7 @@ public class UserKernel extends ThreadedKernel {
 			= new LinkedList<Integer>();
 
 	/** A lock used to access the page list synchronically. */
-	protected static Lock memoryLock = new Lock();
+	protected static Lock memoryLock;
 
 	/** A counter of process IDs. */
 	private static int nextPID = 0;
@@ -209,5 +213,5 @@ public class UserKernel extends ThreadedKernel {
 	private static int numProcess = 0;
 
 	/** A lock used to access the number of live processes. */
-	protected static Lock numProsLock = new Lock();
+	protected static Lock numProsLock;
 }
