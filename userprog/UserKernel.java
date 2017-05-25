@@ -26,24 +26,16 @@ public class UserKernel extends ThreadedKernel {
 
 		console = new SynchConsole(Machine.console());
 
-		Machine.processor().setExceptionHandler(new Runnable() {
-			public void run() {
-				exceptionHandler();
-			}
-		});
-
-		freePages = new LinkedList<Integer>();
 		int numPhysPages = Machine.processor().getNumPhysPages();
 		for (int i = 0; i < numPhysPages; i++) {
 			freePages.add(i);
 		}
 
-		memoryLock = new Lock();
-
-		nextPID = 0;
-		numProcess = 0;
-
-		numProsLock = new Lock();
+		Machine.processor().setExceptionHandler(new Runnable() {
+			public void run() {
+				exceptionHandler();
+			}
+		});
 	}
 
 	/**
@@ -204,17 +196,18 @@ public class UserKernel extends ThreadedKernel {
 	private static Coff dummy1 = null;
 
 	/** A global linked list of free physical pages. */
-	private static LinkedList<Integer> freePages;
+	private static LinkedList<Integer> freePages
+			= new LinkedList<Integer>();
 
 	/** A lock used to access the page list synchronically. */
-	protected static Lock memoryLock;
+	protected static Lock memoryLock = new Lock();
 
 	/** A counter of process IDs. */
-	private static int nextPID;
+	private static int nextPID = 0;
 
 	/** Number of live processes. */
-	private static int numProcess;
+	private static int numProcess = 0;
 
 	/** A lock used to access the number of live processes. */
-	protected static Lock numProsLock;
+	protected static Lock numProsLock = new Lock();
 }

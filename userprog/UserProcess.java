@@ -169,9 +169,12 @@ public class UserProcess {
 		int readBytes = 0;
 		while (readBytes < length) {
 			int vaddrStart = vaddr + readBytes;
-			int vpn = Processor.pageFromAddress(vaddrStart);
-			int pagePosition = Processor.offsetFromAddress(vaddrStart);
+			//Copute vpm
+			int vpn = Processor.pageFromAddress(vaddrStart+readBytes);
+			//Compute offset
+			int pagePosition = Processor.offsetFromAddress(vaddrStart+readBytes);
 			int bytesToRead = Math.min(pageSize - pagePosition, length - readBytes);
+			//Compute physical address
 			int phyaddrStart = pageTable[vpn].ppn * pageSize + pagePosition;
 			System.arraycopy(memory, phyaddrStart, data,
 					offset + readBytes, bytesToRead);
@@ -230,8 +233,8 @@ public class UserProcess {
 		int writeBytes = 0;
 		while (writeBytes < length) {
 			int vaddrStart = vaddr + writeBytes;
-			int vpn = Processor.pageFromAddress(vaddrStart);
-			int pagePosition = Processor.offsetFromAddress(vaddrStart);
+			int vpn = Processor.pageFromAddress(vaddrStart+writeBytes);
+			int pagePosition = Processor.offsetFromAddress(vaddrStart+writeBytes);
 			int bytesToWrite = Math.min(pageSize - pagePosition, length - writeBytes);
 			int phyaddrStart = pageTable[vpn].ppn * pageSize + pagePosition;
 			System.arraycopy(data, offset + writeBytes, memory,

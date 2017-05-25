@@ -22,50 +22,58 @@ int main(){
 	int close1_status;
 	int close_invalid;
 
-	char* write_buffer0 = "This is the first thing that I have written into a file.\n";
-	char* write_buffer1 = "Max is breathing really hard next to me and it is kind of awkward.\n";
-	char* write_buffer_comp = "Max is breathing really hard next";
+	char* write_buffer0 = "This is the first thing that I want to write.\n";
+	char* write_buffer1 = "Oops, still got something.\n";
+	char* write_buffer_comp = "Boring";
 
 	char read_buffer0[BUFFER_LENGTH];
 	char read_buffer1[BUFFER_LENGTH];
 
 	int toCompare;
-	int sum;
 
-	fd0 = creat("Alex.txt");
-	fd1 = creat("Max.txt");
+    // create two files
+	fd0 = creat("Shenghong.txt");
+	fd1 = creat("Junyang.txt");
 	fd_invalid = 5;
+
+    // check the file decriptors
+    check_fd(fd0);
+    check_fd(fd1);
 
 	count_all = strlen(write_buffer0);
 	count_half = strlen(write_buffer1)/2;
 
+
+    // write contents to two files
 	toRet0 = write(fd0, write_buffer0, count_all);
 	toRet1 = write(fd1, write_buffer1, count_half);
 
-	check_fd(fd0);
-	check_fd(fd1);
-
+    // check the number of characters that have just been written
 	check_equality(toRet0, count_all);
 	check_equality(toRet1, count_half);
 
+    // close the file
 	close(fd0);
 	close(fd1);
 
-	open("Alex.txt");
-	open("Max.txt");
+    // open the files again
+	open("Shenghong.txt");
+	open("Junyang.txt");
 
+    // read the contents that have just been written
 	toRet0 = read(fd0, read_buffer0, count_all);
 	toRet1 = read(fd1, read_buffer1, count_half);
 
+    // do we read them all?
 	check_equality(toRet0, count_all);
 	check_equality(toRet1, count_half);
 
 	read_buffer0[toRet0]= '\0';
 	read_buffer1[toRet1] = '\0';
 
+    // compare the read buffer and write buffer
 	toCompare = (int)(strcmp(read_buffer0,write_buffer0));
 	assert(toCompare == 0);
-
 	toCompare = (int)(strcmp(read_buffer1,write_buffer_comp));
 	assert(toCompare == 0);
 
@@ -78,6 +86,7 @@ int main(){
 	check_equality(close_invalid, ERROR);
 
 
+    // we cannot close non-existent files
 	for(i = 4; i < 17; i++){
 		close_invalid = close(i);
 		check_equality(close_invalid, ERROR);
@@ -92,24 +101,40 @@ int main(){
 
 
 	//Open some files that are closed
-	fd0 = open("Alex.txt");
-	fd1 = open("Max.txt");
+	fd0 = open("Shenghong.txt");
+	fd1 = open("Junyang.txt");
 
 	check_fd(fd0);
 	check_fd(fd1);
 
-	write_buffer0 = "This is what I'm writing to Alex.txt";
+    // try to unlink the file
+    int unlink1_status, unlink2_status;
+    unlink1_status = unlink("Shenghong.txt");
+    unlink2_status = unlink("Junyang.txt");
+    check_equality(unlink1_status, 0);
+    check_equality(unlink2_status, 0);
 
-	write(fd0, write_buffer0, strlen(write_buffer0));
+    // try to create more than 14 files
+    creat("2.txt");
+    creat("3.txt");
+    creat("4.txt");
+    creat("5.txt");
+    creat("6.txt");
+    creat("7.txt");
+    creat("8.txt");
+    creat("9.txt");
+    creat("10.txt");
+    creat("11.txt");
+    creat("12.txt");
+    creat("13.txt");
+    creat("14.txt");
+    creat("15.txt");
 
-	sum = 0;
+    fd_invalid = creat("16.txt");
+    check_equality(fd_invalid, -1);
 
-	for(i = 0; i < 1000000; i ++){
-		sum += i;
-	}
 
-	printf("%d\n", sum);
-	printf("ALL TASK %d TESTS PASSED!!!!!!!!!!!!\n\n",1);
+	printf("ALL TASK %d TESTS PASSED!!!! We can sleep. zzzzzzzzz\n\n",1);
 
-	//halt();
+	halt();
 }
