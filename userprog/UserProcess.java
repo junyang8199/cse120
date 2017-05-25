@@ -543,7 +543,6 @@ public class UserProcess {
 
 		//Write those bytes to the buffer in memory.
 		int numByteWrite = writeVirtualMemory(vaddr_bufStart, temp, 0, numByteRead);
-		System.out.println("wah!!!!!!!!!!!!"+numByteWrite );
 		//If writing fails.
 		if (numByteWrite < numByteRead) {
 			return -1;

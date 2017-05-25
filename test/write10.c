@@ -1,4 +1,3 @@
-
 #include "stdio.h"
 #include "stdlib.h"
 
@@ -118,9 +117,7 @@ do_validate (char *fname, char *buffer, char *truth, int len)
 		    r, truth[r], buffer[r]);
 	    exit (-1006);
 	    break;
-	}else {
-		printf ("validate success: offset %d: expected %c, read %c \n",r,truth[r],buffer[r]);
-}
+	}
 	r++;
     }
     if (r == len) {
@@ -143,25 +140,24 @@ main ()
     len = strlen (str);
 
     /* write all bytes at once */
-   // do_write (file, str, len, len);
-   // do_validate (file, buffer, str, len);
+    do_write (file, str, len, len);
+    do_validate (file, buffer, str, len);
 
     /* write 8 bytes at a time */
-   // do_write (file, str, len, 8);
-   // do_validate (file, buffer, str, len);
+    do_write (file, str, len, 8);
+    do_validate (file, buffer, str, len);
 
     /* write 1 byte at a time */
-   // do_write (file, str, len, 1);
-   // do_validate (file, buffer, str, len);
+    do_write (file, str, len, 1);
+    do_validate (file, buffer, str, len);
 
     /* ok, now write lots of binary data.  if you want to manually
  *      * confirm what was written, running "od -i ../test/binary.out"
  *           * will print the file and interpret the data as integers. */
-    file = "binary111.txt";
+    file = "binary.out";
     len = sizeof (bigbuf1);  /* len in units of bytes, bigbufnum in ints */
     for (i = 0; i < bigbufnum; i++) {
 	bigbuf1[i] = i;
-	printf ("bigbuf1[%d]: %d", i, bigbuf1[i]);
     }
 
     /* write all at once */
