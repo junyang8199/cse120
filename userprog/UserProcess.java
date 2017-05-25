@@ -159,7 +159,6 @@ public class UserProcess {
 		if (firstVPN < 0 || lastVPN > numPages) {
 			return 0;
 		}
-System.out.println("cccccccccccccccccccc_numPages: "+numPages);
 		//Get the reference of physical memory array.
 		byte[] memory = Machine.processor().getMemory();
 
@@ -179,13 +178,6 @@ System.out.println("cccccccccccccccccccc_numPages: "+numPages);
 			System.arraycopy(memory, phyaddrStart, data,
 					offset + readBytes, bytesToRead);
 			readBytes += bytesToRead;
-			//System.out.println("RRRRRRRRRRR!!!!!!!!!!VPN = "+vpn);
-			//System.out.println("RRRRRRRRRRR!!!!!!!!!!ppn = " + pageTable[vpn].ppn);
-			//if (memory[phyaddrStart]==0)
-				//System.out.println("000000000000000000000");
-		//	for (int j = 0; j < bytesToRead; j++) {
-		//		System.out.println(memory[phyaddrStart+j]);
-		//	}
 		}
 
 		return readBytes;
@@ -246,7 +238,6 @@ System.out.println("cccccccccccccccccccc_numPages: "+numPages);
 			int phyaddrStart = pageTable[vpn].ppn * pageSize + pagePosition;
 			System.arraycopy(data, offset + writeBytes, memory,
 					phyaddrStart, bytesToWrite);
-			//System.out.println("WWWWWWWW!!!!!!!!!VPN"+ vpn);
 			writeBytes += bytesToWrite;
 		}
 
