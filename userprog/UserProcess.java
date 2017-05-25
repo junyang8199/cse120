@@ -159,7 +159,7 @@ public class UserProcess {
 		if (firstVPN < 0 || lastVPN > numPages) {
 			return 0;
 		}
-
+System.out.println("cccccccccccccccccccc_numPages: "+numPages);
 		//Get the reference of physical memory array.
 		byte[] memory = Machine.processor().getMemory();
 
@@ -179,6 +179,13 @@ public class UserProcess {
 			System.arraycopy(memory, phyaddrStart, data,
 					offset + readBytes, bytesToRead);
 			readBytes += bytesToRead;
+			System.out.println("RRRRRRRRRRR!!!!!!!!!!VPN = "+vpn);
+			System.out.println("RRRRRRRRRRR!!!!!!!!!!ppn = " + pageTable[vpn].ppn);
+			if (memory[phyaddrStart]==0)
+				System.out.println("000000000000000000000");
+		//	for (int j = 0; j < bytesToRead; j++) {
+		//		System.out.println(memory[phyaddrStart+j]);
+		//	}
 		}
 
 		return readBytes;
@@ -239,6 +246,7 @@ public class UserProcess {
 			int phyaddrStart = pageTable[vpn].ppn * pageSize + pagePosition;
 			System.arraycopy(data, offset + writeBytes, memory,
 					phyaddrStart, bytesToWrite);
+			System.out.println("WWWWWWWW!!!!!!!!!VPN"+ vpn);
 			writeBytes += bytesToWrite;
 		}
 
@@ -525,7 +533,7 @@ public class UserProcess {
 	 */
 	private int handleRead(int desp, int vaddr_bufStart, int count) {
 		//Check if the file descriptor is valid.
-		if (desp < 0 || desp > 15 || openFiles[desp] == null) {
+		if (desp < 0 || desp > 15 || openFiles[desp] == null || count < 0) {
 			return -1;
 		}
 
@@ -544,7 +552,7 @@ public class UserProcess {
 
 		//Write those bytes to the buffer in memory.
 		int numByteWrite = writeVirtualMemory(vaddr_bufStart, temp, 0, numByteRead);
-
+		System.out.println("wah!!!!!!!!!!!!"+numByteWrite );
 		//If writing fails.
 		if (numByteWrite < numByteRead) {
 			return -1;
@@ -558,24 +566,32 @@ public class UserProcess {
 	 */
 	private int handleWrite(int desp, int vaddr_bufStart, int count) {
 		//Check if the file descriptor is available.
-		if (desp < 0 || desp > 15 || openFiles[desp] == null) {
+		if (desp < 0 || desp > 15 || openFiles[desp] == null || count < 0) {
+	//		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!here1");
 			return -1;
 		}
 
 		//Read bytes from the buffer in memory into a temporary array.
 		byte temp[] = new byte[count];
+		//If the buffer is invalid, return -1.
+		if (vaddr_bufStart < 0 || vaddr_bufStart > Machine.processor().getNumPhysPages() * pageSize)
+			return -1;
 		int readNumber = readVirtualMemory(vaddr_bufStart, temp);
 		//If there's nothing to read in the buffer.
-		if(readNumber <= 0)
+		if(readNumber <= 0) {
+         //               System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!here2");
 			return 0;
+		}
 
 		//Write those bytes into the file.
 		//The file position is advanced by the write method.
 		int numByteWrite = openFiles[desp].write(temp, 0, count);
 
 		//Error. Did not finish writing.
-		if(numByteWrite < count)
+		if(numByteWrite < count){
+	//		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!here3");
 			return -1;
+		}
 
 		return numByteWrite;
 	}
@@ -859,11 +875,11 @@ public class UserProcess {
 				return handleOpen(a0);
 
 			case syscallRead:
-                //System.out.println("handling read");
+                //System.out.println("!!!!!!!!!!!!!!!!!handling read");
 				return handleRead(a0, a1, a2);
 
 			case syscallWrite:
-                //System.out.println("handling write");
+                //System.out.println("!!!!!!!!!!!!!!!!!handling write");
 				return handleWrite(a0, a1, a2);
 
 			case syscallClose:
