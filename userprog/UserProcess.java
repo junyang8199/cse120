@@ -170,19 +170,19 @@ System.out.println("cccccccccccccccccccc_numPages: "+numPages);
 		while (readBytes < length) {
 			int vaddrStart = vaddr + readBytes;
 			//Copute vpm
-			int vpn = Processor.pageFromAddress(vaddrStart+readBytes);
+			int vpn = Processor.pageFromAddress(vaddrStart);
 			//Compute offset
-			int pagePosition = Processor.offsetFromAddress(vaddrStart+readBytes);
+			int pagePosition = Processor.offsetFromAddress(vaddrStart);
 			int bytesToRead = Math.min(pageSize - pagePosition, length - readBytes);
 			//Compute physical address
 			int phyaddrStart = pageTable[vpn].ppn * pageSize + pagePosition;
 			System.arraycopy(memory, phyaddrStart, data,
 					offset + readBytes, bytesToRead);
 			readBytes += bytesToRead;
-			System.out.println("RRRRRRRRRRR!!!!!!!!!!VPN = "+vpn);
-			System.out.println("RRRRRRRRRRR!!!!!!!!!!ppn = " + pageTable[vpn].ppn);
-			if (memory[phyaddrStart]==0)
-				System.out.println("000000000000000000000");
+			//System.out.println("RRRRRRRRRRR!!!!!!!!!!VPN = "+vpn);
+			//System.out.println("RRRRRRRRRRR!!!!!!!!!!ppn = " + pageTable[vpn].ppn);
+			//if (memory[phyaddrStart]==0)
+				//System.out.println("000000000000000000000");
 		//	for (int j = 0; j < bytesToRead; j++) {
 		//		System.out.println(memory[phyaddrStart+j]);
 		//	}
@@ -240,13 +240,13 @@ System.out.println("cccccccccccccccccccc_numPages: "+numPages);
 		int writeBytes = 0;
 		while (writeBytes < length) {
 			int vaddrStart = vaddr + writeBytes;
-			int vpn = Processor.pageFromAddress(vaddrStart+writeBytes);
-			int pagePosition = Processor.offsetFromAddress(vaddrStart+writeBytes);
+			int vpn = Processor.pageFromAddress(vaddrStart);
+			int pagePosition = Processor.offsetFromAddress(vaddrStart);
 			int bytesToWrite = Math.min(pageSize - pagePosition, length - writeBytes);
 			int phyaddrStart = pageTable[vpn].ppn * pageSize + pagePosition;
 			System.arraycopy(data, offset + writeBytes, memory,
 					phyaddrStart, bytesToWrite);
-			System.out.println("WWWWWWWW!!!!!!!!!VPN"+ vpn);
+			//System.out.println("WWWWWWWW!!!!!!!!!VPN"+ vpn);
 			writeBytes += bytesToWrite;
 		}
 
