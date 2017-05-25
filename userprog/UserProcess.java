@@ -737,7 +737,7 @@ public class UserProcess {
 		UserKernel.numProsLock.acquire();
 		int leftProsNum = UserKernel.getNumPros();
 		if (leftProsNum == 1) {
-			System.out.println("I'm the last process!!!!!!!");
+			//System.out.println("I'm the last process!!!!!!!");
 			Kernel.kernel.terminate();
 		}
 		UserKernel.decrePros();
@@ -847,43 +847,43 @@ public class UserProcess {
 	public int handleSyscall(int syscall, int a0, int a1, int a2, int a3) {
 		switch (syscall) {
 			case syscallHalt:
-			    System.out.println("handling halt");
+			    //System.out.println("handling halt");
 				return handleHalt();
 
 			case syscallCreate:
-			    System.out.println("handling create");
+			    //System.out.println("handling create");
 				return handleCreat(a0);
 
 			case syscallOpen:
-                System.out.println("handling open");
+                //System.out.println("handling open");
 				return handleOpen(a0);
 
 			case syscallRead:
-                System.out.println("handling read");
+                //System.out.println("handling read");
 				return handleRead(a0, a1, a2);
 
 			case syscallWrite:
-                System.out.println("handling write");
+                //System.out.println("handling write");
 				return handleWrite(a0, a1, a2);
 
 			case syscallClose:
-                System.out.println("handling close");
+                //System.out.println("handling close");
 				return handleClose(a0);
 
 			case syscallUnlink:
-                System.out.println("handling unlink");
+                ////System.out.println("handling unlink");
 				return handleUnlink(a0);
 
 			case syscallExec:
-                System.out.println("handling exec");
+                //System.out.println("handling exec");
 				return handleExec(a0, a1, a2);
 
 			case syscallJoin:
-                System.out.println("handling join");
+                //System.out.println("handling join");
 				return handleJoin(a0, a1);
 
 			case syscallExit:
-                System.out.println("handling exit");
+                //System.out.println("handling exit");
 				return handleExit(a0);
 
 			default:
