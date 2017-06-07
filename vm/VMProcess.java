@@ -177,7 +177,7 @@ public class VMProcess extends UserProcess {
 		Lib.debug(dbgVM, "\thandleTLBMissException: begin to handle exception");
         int vpn = Processor.pageFromAddress(vaddr);
 
-        if (vpn < 0 || vpn > pageTable.length) {
+        if (vpn < 0 || vpn > pageTable.length - 1) {
             super.handleException(1);
         }
         // entry must be in page table, let's check if it's valid
