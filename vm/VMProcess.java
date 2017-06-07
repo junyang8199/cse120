@@ -196,7 +196,7 @@ public class VMProcess extends UserProcess {
         else {
 			entry = handlePageFault(vpn);
 			syncPageTable(entry);
-			syncTLB(entry.vpn);
+			//syncTLB(entry.vpn);
         }
         Machine.processor().writeTLBEntry(index, entry);
 	}
