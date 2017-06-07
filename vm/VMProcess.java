@@ -180,7 +180,6 @@ public class VMProcess extends UserProcess {
         // entry must be in page table, let's check if it's valid
         TranslationEntry entry = pageTable[vpn];
         int index = Lib.random(Machine.processor().getTLBSize());
-
         // if entry is valid, then replace a TLB entry and leave
         if (entry.valid) {
             // query invalid entry, or just randomly pick one
@@ -228,7 +227,7 @@ public class VMProcess extends UserProcess {
         }
         // 3. sync the page table and TLB
         syncPageTable(entry);
-        syncTLB(vpn);
+        //syncTLB(vpn);
         return entry;
     }
 
