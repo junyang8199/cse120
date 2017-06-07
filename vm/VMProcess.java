@@ -159,6 +159,7 @@ public class VMProcess extends UserProcess {
 		switch (cause) {
 			case Processor.exceptionTLBMiss:
                 handleTLBMiss(processor.readRegister(Processor.regBadVAddr));
+                break;
 			default:
 				super.handleException(cause);
 				break;
