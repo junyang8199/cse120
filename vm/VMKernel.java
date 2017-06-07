@@ -18,7 +18,6 @@ public class VMKernel extends UserKernel {
 	 */
 	public VMKernel() {
 		super();
-		swapSpace = new SwapFile();
         Arrays.fill(physicalPages, null);
         memoryLock = super.memoryLock;
         pinCond = new Condition(memoryLock);
@@ -29,6 +28,7 @@ public class VMKernel extends UserKernel {
 	 */
 	public void initialize(String[] args) {
 		super.initialize(args);
+		swapSpace = new SwapFile();
 	}
 
 	/**
