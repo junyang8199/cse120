@@ -19,7 +19,7 @@ public class VMKernel extends UserKernel {
 	public VMKernel() {
 		super();
         Arrays.fill(physicalPages, null);
-        memoryLock = super.memoryLock;
+        memoryLock = new Lock();
         pinCond = new Condition(memoryLock);
     }
 
