@@ -200,7 +200,7 @@ public class UserKernel extends ThreadedKernel {
 	private static Coff dummy1 = null;
 
 	/** A global linked list of free physical pages. */
-	private static LinkedList<Integer> freePages
+	protected static LinkedList<Integer> freePages
 			= new LinkedList<Integer>();
 
 	/** A lock used to access the page list synchronically. */

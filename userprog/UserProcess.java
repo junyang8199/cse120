@@ -168,7 +168,7 @@ public class UserProcess {
 		int readBytes = 0;
 		while (readBytes < length) {
 			int vaddrStart = vaddr + readBytes;
-			//Copute vpm
+			//Compute vpm
 			int vpn = Processor.pageFromAddress(vaddrStart);
 			//Compute offset
 			int pagePosition = Processor.offsetFromAddress(vaddrStart);
@@ -975,7 +975,7 @@ public class UserProcess {
 	private OpenFile stdout;
 
 	/** PID of this process. */
-	private int pid;
+	protected int pid;
 
 	/** Parent process. */
 	private UserProcess parent;
