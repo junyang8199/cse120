@@ -204,7 +204,7 @@ public class UserKernel extends ThreadedKernel {
 			= new LinkedList<Integer>();
 
 	/** A lock used to access the page list synchronically. */
-	protected static Lock memoryLock;
+	public static Lock memoryLock;
 
 	/** A counter of process IDs. */
 	private static int nextPID = 0;

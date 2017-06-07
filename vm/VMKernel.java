@@ -19,7 +19,7 @@ public class VMKernel extends UserKernel {
 	public VMKernel() {
 		super();
         Arrays.fill(physicalPages, null);
-        memoryLock = new Lock();
+        //memoryLock = new Lock();
         pinCond = new Condition(memoryLock);
     }
 
@@ -237,7 +237,7 @@ public class VMKernel extends UserKernel {
 
 	protected static SwapFile swapSpace;
 
-	protected static Lock memoryLock;
+	//protected static Lock memoryLock;
 
 	private static int pinnedPageNum = 0;
 
