@@ -68,7 +68,7 @@ public class VMProcess extends UserProcess {
 	protected boolean loadSections() {
         // initialize the page table and set them as invalid
 		UserKernel.memoryLock.acquire();
-		pageTable = new TranslationEntry[Machine.processor().getNumPhysPages()];
+		this.pageTable = new TranslationEntry[Machine.processor().getNumPhysPages()];
 		for (int i = 0; i < pageTable.length; i++) {
 			pageTable[i] = new TranslationEntry(i, i,
 					false, false, false, false);
@@ -236,5 +236,7 @@ public class VMProcess extends UserProcess {
 	private static final char dbgProcess = 'a';
 
 	private static final char dbgVM = 'v';
+
+	private static TranslationEntry[] pageTable;
 
 }
