@@ -177,6 +177,9 @@ public class VMProcess extends UserProcess {
 		Lib.debug(dbgVM, "\thandleTLBMissException: begin to handle exception");
         int vpn = Processor.pageFromAddress(vaddr);
 
+        if (vpn < 0 || vpn > pageTable.length) {
+            super.handleException(1);
+        }
         // entry must be in page table, let's check if it's valid
         TranslationEntry entry = this.pageTable[vpn];
         int index = Lib.random(Machine.processor().getTLBSize());
