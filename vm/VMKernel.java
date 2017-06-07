@@ -49,9 +49,9 @@ public class VMKernel extends UserKernel {
 	 * Terminate this kernel. Never returns.
 	 */
 	public void terminate() {
-		super.terminate();
 		swapSpace.clear();
-		ThreadedKernel.fileSystem.remove("swapFileName");
+		ThreadedKernel.fileSystem.remove(swapSpace.getName());
+        super.terminate();
 	}
 
     /**
@@ -101,7 +101,7 @@ public class VMKernel extends UserKernel {
         memoryLock.acquire();
         invertedPageTable.put(key, page);
         physicalPages[page.entry.ppn] =  page;
-        Machine.processor().writeTLBEntry(vpn, page.entry);
+        //Machine.processor().writeTLBEntry(vpn, page.entry);
         memoryLock.release();
 
         return page.entry;
@@ -385,6 +385,9 @@ public class VMKernel extends UserKernel {
             int position = (int)iterator.next();
             availablePosition.remove(position);
             return position;
+        }
+        static String getName() {
+            return swapFile.getName();
         }
 
         /**

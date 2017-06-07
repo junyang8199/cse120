@@ -179,11 +179,11 @@ public class VMProcess extends UserProcess {
 
         // entry must be in page table, let's check if it's valid
         TranslationEntry entry = pageTable[vpn];
+        int index = Lib.random(Machine.processor().getTLBSize());
 
         // if entry is valid, then replace a TLB entry and leave
         if (entry.valid) {
             // query invalid entry, or just randomly pick one
-            int index = Lib.random(Machine.processor().getTLBSize());
             for (int i = 0; i < Machine.processor().getTLBSize(); i++) {
                 if (Machine.processor().readTLBEntry(i).valid == false) {
                     index = i;
@@ -199,6 +199,7 @@ public class VMProcess extends UserProcess {
 			syncPageTable(entry);
 			syncTLB(entry.vpn);
         }
+        Machine.processor().writeTLBEntry(index, entry);
 	}
 
 	private TranslationEntry handlePageFault(int vpn) {
