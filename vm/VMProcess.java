@@ -22,14 +22,8 @@ public class VMProcess extends UserProcess {
 	 * Called by <tt>UThread.saveState()</tt>.
 	 */
 	public void saveState() {
-
 	    Lib.debug(dbgVM, "\tsave state for process" + pid);
-        // flush the TLB to handle context switches
-        for (int i = 0; i < Machine.processor().getTLBSize(); i++) {
-            TranslationEntry entry = Machine.processor().readTLBEntry(i);
-            entry.valid = false;
-            Machine.processor().writeTLBEntry(i, entry);
-        }
+        flushTLB();
         super.saveState();
     }
 
@@ -115,13 +109,19 @@ public class VMProcess extends UserProcess {
             VMKernel.removeSwapPage(pid, entry.vpn);
 
             // 4. clear TLB: just set the entry as invalid
-            entry.valid = false;
-            Machine.processor().writeTLBEntry(entry.vpn, entry);
+            flushTLB();
 
             // no need to free own page table, because we will reinitialize it next time
         }
         VMKernel.memoryLock.release();
 	}
+	private void flushTLB() {
+        for (int i = 0; i < Machine.processor().getTLBSize(); i++) {
+            TranslationEntry entry = Machine.processor().readTLBEntry(i);
+            entry.valid = false;
+            Machine.processor().writeTLBEntry(i, entry);
+        }
+    }
 
 	@Override
     public int readVirtualMemory(int vaddr, byte[] data) {
@@ -194,9 +194,7 @@ public class VMProcess extends UserProcess {
 		Lib.debug(dbgVM, "\thandleTLBMissException: begin to handle exception");
         int vpn = Processor.pageFromAddress(vaddr);
 
-        if (vpn < 0 || vpn > pageTable.length - 1) {
-            super.handleException(1);
-        }
+        System.err.println(vpn);
 
         // entry must be in page table, let's check if it's valid
         TranslationEntry entry = pageTable[vpn];
