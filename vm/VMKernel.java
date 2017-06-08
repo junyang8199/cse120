@@ -64,7 +64,7 @@ public class VMKernel extends UserKernel {
      */
     public static TranslationEntry allocatePage(int pid, int vpn) {
 
-        Lib.debug(dbgVM, "\ttry to allocate a physical page for process");
+        Lib.debug(dbgVM, "\tallocate a page in physical memory for process: " + pid);
         TableKey key = new TableKey(pid, vpn);
         MemoryPage page;
 
@@ -188,6 +188,10 @@ public class VMKernel extends UserKernel {
 	    TableKey key = new TableKey(pid, vpn);
 	    if (invertedPageTable.containsKey(key)) return true;
 	    else return false;
+    }
+    protected static TranslationEntry getEntry(int pid, int vpn) {
+        TableKey key = new TableKey(pid, vpn);
+        return invertedPageTable.get(key).entry;
     }
     protected static void removeMapping(int pid, int vpn) {
 	    TableKey key = new TableKey(pid, vpn);
