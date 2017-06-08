@@ -82,13 +82,16 @@ public class VMProcess extends UserProcess {
 	protected boolean loadSections() {
         // initialize the page table and set them as invalid
 		UserKernel.memoryLock.acquire();
-        System.out.println("NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN:  "+numPages);
-		pageTable = new TranslationEntry[numPages + 1];
-		System.out.println("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH:  "+pageTable.length);
+
+		int vpnMax = (int) ((long) 0xFFFFFFFFL / pageSize) + 1;
+        //int vpnMax = numPages + 8;
+
+        pageTable = new TranslationEntry[vpnMax];
 		for (int i = 0; i < pageTable.length; i++) {
 			pageTable[i] = new TranslationEntry(i, i,
 					false, false, false, false);
 		}
+
 		UserKernel.memoryLock.release();
 		return true;
 	}
@@ -193,6 +196,7 @@ public class VMProcess extends UserProcess {
      * @return
      */
 	private void handleTLBMiss(int vaddr) {
+
 
 		Lib.debug(dbgVM, "\thandleTLBMissException: begin to handle exception");
         int vpn = Processor.pageFromAddress(vaddr);
