@@ -233,7 +233,8 @@ public class VMProcess extends UserProcess {
 
 	    // 1. allocate a page in memory
         TranslationEntry entry = VMKernel.allocatePage(pid, vpn);
-
+        pageTable[vpn].valid = true;
+        sync(pageTable[vpn], entry);
         // 2. fill out the page
         if (!VMKernel.pageInSwapFile(pid, vpn)) {
             if (vpn >= 0) {
