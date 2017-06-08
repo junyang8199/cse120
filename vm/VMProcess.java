@@ -227,26 +227,18 @@ public class VMProcess extends UserProcess {
         TranslationEntry entry = VMKernel.allocatePage(pid, vpn);
 
         // 2. fill out the page
-        // Case1: this is not a stack page and is not in swap file
-        if ((entry.readOnly || vpn < pageTable.length - 8) && !VMKernel.pageInSwapFile(pid, vpn)) {
-            for (int i = 0; i < coff.getNumSections(); i++) {
-                CoffSection section = coff.getSection(i);
-                for (int j = 0; i < section.getLength(); i++) {
-                    if (vpn == section.getFirstVPN() + j) {
-                        section.loadPage(i, entry.ppn);
-                    }
-                }
+        if (!VMKernel.pageInSwapFile(pid, vpn)) {
+            if (vpn >= 0) {
+                CoffSection section = coff.getSection(vpn);
+                section.loadPage(vpn - section.getFirstVPN(), entry.ppn);
+            }
+            else {
+                Arrays.fill(Machine.processor().getMemory(), entry.ppn * pageSize,
+                        (entry.ppn + 1) * pageSize, (byte)0);
             }
         }
-        // Case2: we can find the page in swap file
-        else if (VMKernel.pageInSwapFile(pid, vpn)) {
-            VMKernel.swapSpace.swapIn(pid, vpn, entry.ppn);
-        }
-        // Case3: this is a stack page
         else {
-            int pageStartAddr = Processor.makeAddress(entry.ppn, 0);
-            Arrays.fill(Machine.processor().getMemory(), pageStartAddr,
-                    pageStartAddr + pageSize, (byte)0);
+            VMKernel.swapSpace.swapIn(pid, vpn, entry.ppn);
         }
         return entry;
     }
