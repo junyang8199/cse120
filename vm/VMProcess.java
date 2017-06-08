@@ -18,7 +18,7 @@ public class VMProcess extends UserProcess {
 	public VMProcess() {
 		super();
 	}
-
+    @Override
 	/**
 	 * Save the state of this process in preparation for a context switch.
 	 * Called by <tt>UThread.saveState()</tt>.
@@ -28,7 +28,7 @@ public class VMProcess extends UserProcess {
         flushTLB();
         super.saveState();
     }
-
+    @Override
 	/**
 	 * Restore the state of this process after a context switch. Called by
 	 * <tt>UThread.restoreState()</tt>.
@@ -72,7 +72,8 @@ public class VMProcess extends UserProcess {
 	    entry1.readOnly = entry2.readOnly;
 	    entry1.dirty = entry2.dirty;
     }
-
+    /**
+    @Override
     private boolean load(String name, String[] args) {
         Lib.debug(dbgProcess, "UserProcess.load(\"" + name + "\")");
 
@@ -118,16 +119,16 @@ public class VMProcess extends UserProcess {
         }
 
         // program counter initially points at the program entry point
-        //initialPC = coff.getEntryPoint();
+        initialPC = coff.getEntryPoint();
 
         // next comes the stack; stack pointer initially points to top of it
         numPages += stackPages;
-        //initialSP = numPages * pageSize;
+        initialSP = numPages * pageSize;
 
         // and finally reserve 1 page for arguments
         numPages++;
 
-        /**
+
         if (!loadSections())
             return false;
 
@@ -146,10 +147,11 @@ public class VMProcess extends UserProcess {
             stringOffset += argv[i].length;
             Lib.assertTrue(writeVirtualMemory(stringOffset, new byte[] { 0 }) == 1);
             stringOffset += 1;
-        }*/
+        }
 
         return true;
     }
+     */
     @Override
 	/**
 	 * Initializes page tables for this process so that the executable can be
@@ -160,7 +162,7 @@ public class VMProcess extends UserProcess {
 	protected boolean loadSections() {
         // initialize the page table and set them as invalid
 		UserKernel.memoryLock.acquire();
-		pageTable = new TranslationEntry[numPages];
+		pageTable = new TranslationEntry[super.numPages];
 		for (int i = 0; i < pageTable.length; i++) {
 			pageTable[i] = new TranslationEntry(i, i,
 					false, false, false, false);
@@ -273,7 +275,9 @@ public class VMProcess extends UserProcess {
 		Lib.debug(dbgVM, "\thandleTLBMissException: begin to handle exception");
         int vpn = Processor.pageFromAddress(vaddr);
 
-        System.err.println(vpn);
+        if (vpn > numPages) {
+            extendPageTable();
+        }
 
         // entry must be in page table, let's check if it's valid
         TranslationEntry entry = pageTable[vpn];
@@ -324,6 +328,14 @@ public class VMProcess extends UserProcess {
             VMKernel.swapSpace.swapIn(pid, vpn, entry.ppn);
         }
         return entry;
+    }
+    private void extendPageTable() {
+	    TranslationEntry[] newTable = new TranslationEntry[numPages*2];
+	    for (int i = 0; i < numPages; i++) {
+	        newTable[i] = pageTable[i];
+        }
+        pageTable = newTable;
+	    numPages *= 2;
     }
 
 	private static final int pageSize = Processor.pageSize;
