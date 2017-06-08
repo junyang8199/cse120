@@ -276,7 +276,7 @@ public class VMProcess extends UserProcess {
         int vpn = Processor.pageFromAddress(vaddr);
 
         if (vpn > numPages) {
-            extendPageTable();
+            extendPageTable(vpn);
         }
 
         // entry must be in page table, let's check if it's valid
@@ -329,13 +329,13 @@ public class VMProcess extends UserProcess {
         }
         return entry;
     }
-    private void extendPageTable() {
-	    TranslationEntry[] newTable = new TranslationEntry[numPages*2];
+    private void extendPageTable(int vpn) {
+	    TranslationEntry[] newTable = new TranslationEntry[vpn + 1];
 	    for (int i = 0; i < numPages; i++) {
 	        newTable[i] = pageTable[i];
         }
         pageTable = newTable;
-	    numPages *= 2;
+	    numPages = vpn + 1;
     }
 
 	private static final int pageSize = Processor.pageSize;
