@@ -25,7 +25,7 @@ public class UserProcess {
 	 */
 	public UserProcess() {
 		int numPhysPages = Machine.processor().getNumPhysPages();
-		pageTable = new TranslationEntry[numPhysPages];
+		//pageTable = new TranslationEntry[numPhysPages];
 
 		openFiles = new OpenFile[maxOpenFile];
 
@@ -70,6 +70,8 @@ public class UserProcess {
 	public boolean execute(String name, String[] args) {
 		if (!load(name, args))
 			return false;
+
+		pageTable = new TranslationEntry[numPages];
 
 		thread = new UThread(this);
 		thread.setName(name).fork();
