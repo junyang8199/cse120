@@ -86,7 +86,8 @@ public class VMProcess extends UserProcess {
 		int vpnMax = (int) ((long) 0xFFFFFFFFL / pageSize) + 1;
         //int vpnMax = numPages + 8;
 
-        pageTable = new TranslationEntry[vpnMax];
+        //pageTable = new TranslationEntry[numPages];
+        pageTable = new TranslationEntry[numPages + 20];
 		for (int i = 0; i < pageTable.length; i++) {
 			pageTable[i] = new TranslationEntry(i, i,
 					false, false, false, false);
@@ -144,9 +145,11 @@ public class VMProcess extends UserProcess {
 	    int total = Processor.pageFromAddress(vaddr + length);
 
         for (int i = vpn; i < total + 1; i++) {
-            int pid = super.pid;
-            if (VMKernel.pageInMemory(pid, i))
-                handlePageFault(vpn);
+            if (!VMKernel.pageInMemory(pid, i)) {
+                handlePageFault(i);
+            }
+            sync(pageTable[i], VMKernel.getEntry(pid, i));
+            VMKernel.pin(VMKernel.getEntry(pid, i).ppn);
         }
         return super.readVirtualMemory(vaddr, data, offset, length);
     }
@@ -162,9 +165,11 @@ public class VMProcess extends UserProcess {
         int total = Processor.pageFromAddress(vaddr + length);
 
         for (int i = vpn; i < total + 1; i++) {
-            int pid = super.pid;
-            if (VMKernel.pageInMemory(pid, i))
-                handleTLBMiss(vaddr);
+            if (!VMKernel.pageInMemory(pid, i)) {
+                handleTLBMiss(i);
+            }
+            sync(pageTable[i], VMKernel.getEntry(pid, i));
+            VMKernel.pin(VMKernel.getEntry(pid, i).ppn);
         }
         return super.readVirtualMemory(vaddr, data, offset, length);
     }

@@ -152,7 +152,7 @@ public class VMKernel extends UserKernel {
 	 * Pin the page in memory so that this page cannot be evicted
 	 * @param ppn
 	 */
-	private void pin(int ppn) {
+	protected static void pin(int ppn) {
 
 	    // Only pin the page that is already allocated in physical memory
         memoryLock.acquire();
@@ -168,7 +168,7 @@ public class VMKernel extends UserKernel {
 	 * Unpin the page in memory
 	 * @param ppn
 	 */
-	private void unpin(int ppn) {
+	protected static void unpin(int ppn) {
 		memoryLock.acquire();
 		MemoryPage page = physicalPages[ppn];
 		if (page.pinned) {
