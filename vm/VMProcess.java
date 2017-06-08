@@ -227,8 +227,14 @@ public class VMProcess extends UserProcess {
         // 2. fill out the page
         if (!VMKernel.pageInSwapFile(pid, vpn)) {
             if (vpn >= 0) {
-                CoffSection section = coff.getSection(vpn);
-                section.loadPage(vpn - section.getFirstVPN(), entry.ppn);
+                for (int i = 0; i > coff.getNumSections(); i++) {
+                    CoffSection section = coff.getSection(i);
+                    for (int j = 0; j < section.getLength(); j++) {
+                        if (vpn == section.getFirstVPN() + j) section.loadPage(j, entry.ppn);
+                    }
+                }
+                //CoffSection section = coff.getSection(vpn);
+                //section.loadPage(vpn - section.getFirstVPN(), entry.ppn);
             }
             else {
                 Arrays.fill(Machine.processor().getMemory(), entry.ppn * pageSize,
