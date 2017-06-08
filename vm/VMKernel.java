@@ -63,7 +63,7 @@ public class VMKernel extends UserKernel {
      * @return TranslationEntry of newly allocated page
      */
     public static TranslationEntry allocatePage(int pid, int vpn) {
-
+        System.out.println("allocating page!!!!!!!!!!!!!!!!!!");
         Lib.debug(dbgVM, "\tallocate a page in physical memory for process: " + pid);
         TableKey key = new TableKey(pid, vpn);
         MemoryPage page;
@@ -103,6 +103,7 @@ public class VMKernel extends UserKernel {
         physicalPages[page.entry.ppn] =  page;
         //Machine.processor().writeTLBEntry(vpn, page.entry);
         memoryLock.release();
+        System.out.println("page number is" + page.entry.ppn);
 
         return page.entry;
     }
