@@ -285,7 +285,10 @@ public class VMKernel extends UserKernel {
 		 */
 		@Override
 		public int hashCode() {
-	    	return Processor.makeAddress(pid, vpn);
+		    int hash = 23;
+		    hash = hash * 31 + pid;
+		    hash = hash * 31 + vpn;
+		    return hash;
 		}
 
 		@Override
