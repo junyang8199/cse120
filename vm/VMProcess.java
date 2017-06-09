@@ -83,10 +83,6 @@ public class VMProcess extends UserProcess {
         // initialize the page table and set them as invalid
 		UserKernel.memoryLock.acquire();
 
-		int vpnMax = (int) ((long) 0xFFFFFFFFL / pageSize) + 1;
-        //int vpnMax = numPages + 8;
-
-        //pageTable = new TranslationEntry[numPages];
         pageTable = new TranslationEntry[numPages];
 		for (int i = 0; i < pageTable.length; i++) {
 			pageTable[i] = new TranslationEntry(i, i,
@@ -272,16 +268,6 @@ public class VMProcess extends UserProcess {
         }
         return entry;
     }
-    /**
-    private void extendPageTable(int vpn) {
-	    TranslationEntry[] newTable = new TranslationEntry[vpn + 1];
-	    for (int i = 0; i < numPages; i++) {
-	        newTable[i] = pageTable[i];
-        }
-        pageTable = newTable;
-	    numPages = vpn + 1;
-    }
-     */
 
 	private static final int pageSize = Processor.pageSize;
 
@@ -290,7 +276,5 @@ public class VMProcess extends UserProcess {
 	private static final char dbgVM = 'v';
 
 	private static TranslationEntry[] pageTable;
-
-	//private static int numPages;
 
 }
