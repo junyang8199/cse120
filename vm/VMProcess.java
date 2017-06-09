@@ -87,7 +87,7 @@ public class VMProcess extends UserProcess {
         //int vpnMax = numPages + 8;
 
         //pageTable = new TranslationEntry[numPages];
-        pageTable = new TranslationEntry[(1<<21) - 1];
+        pageTable = new TranslationEntry[numPages];
 		for (int i = 0; i < pageTable.length; i++) {
 			pageTable[i] = new TranslationEntry(i, i,
 					false, false, false, false);
@@ -263,6 +263,7 @@ public class VMProcess extends UserProcess {
         }
         return entry;
     }
+    /**
     private void extendPageTable(int vpn) {
 	    TranslationEntry[] newTable = new TranslationEntry[vpn + 1];
 	    for (int i = 0; i < numPages; i++) {
@@ -271,6 +272,7 @@ public class VMProcess extends UserProcess {
         pageTable = newTable;
 	    numPages = vpn + 1;
     }
+     */
 
 	private static final int pageSize = Processor.pageSize;
 
