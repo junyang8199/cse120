@@ -39,6 +39,7 @@ public class VMProcess extends UserProcess {
 		Lib.debug(dbgVM, "\trestore state for process" + pid);
 		System.out.println("Context Switch HAPPENS!!!!!!!!!!!!!!!!!!!!!");
 		// 1. synchronize TLB: set the entry as valid if this entry exist in inverted page table
+        /**
         for (int i = 0; i < Machine.processor().getTLBSize(); i++) {
             TranslationEntry TLBEntry= Machine.processor().readTLBEntry(i);
             if (VMKernel.pageInMemory(pid, TLBEntry.vpn)) {
@@ -49,6 +50,7 @@ public class VMProcess extends UserProcess {
                 Machine.processor().writeTLBEntry(i, entry);
             }
         }
+         */
 
         // 2. synchronize process' personal page table
         for (int i = 0; i < pageTable.length; i++) {
@@ -124,7 +126,7 @@ public class VMProcess extends UserProcess {
         for (int i = 0; i < Machine.processor().getTLBSize(); i++) {
             TranslationEntry entry = Machine.processor().readTLBEntry(i);
             entry.valid = false;
-            Machine.processor().writeTLBEntry(i, entry);
+            //Machine.processor().writeTLBEntry(i, entry);
         }
     }
 
