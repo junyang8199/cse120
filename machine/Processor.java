@@ -567,7 +567,6 @@ public final class Processor {
 
 	/** Main memory for user programs. */
 	private byte[] mainMemory;
-
 	/** The kernel exception handler, called on every user exception. */
 	private Runnable exceptionHandler = null;
 

@@ -87,7 +87,7 @@ public class VMProcess extends UserProcess {
         //int vpnMax = numPages + 8;
 
         //pageTable = new TranslationEntry[numPages];
-        pageTable = new TranslationEntry[numPages + 20];
+        pageTable = new TranslationEntry[(1<<21) - 1];
 		for (int i = 0; i < pageTable.length; i++) {
 			pageTable[i] = new TranslationEntry(i, i,
 					false, false, false, false);
