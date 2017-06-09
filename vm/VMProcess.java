@@ -161,7 +161,7 @@ public class VMProcess extends UserProcess {
     public int writeVirtualMemory(int vaddr, byte[] data, int offset, int length) {
         int vpn = Processor.pageFromAddress(vaddr);
         int total = Processor.pageFromAddress(vaddr + length);
-        //System.out.println("try to write virtual memory!!!");
+        System.out.println("try to write virtual memory!!!");
         for (int i = vpn; i < total + 1; i++) {
             if (!VMKernel.pageInMemory(pid, i)) {
                 //System.out.println("Begin from here!!!!!!!!!!!!!  " + i);
