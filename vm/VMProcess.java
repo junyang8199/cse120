@@ -146,10 +146,11 @@ public class VMProcess extends UserProcess {
 
         for (int i = vpn; i < total + 1; i++) {
             if (!VMKernel.pageInMemory(pid, i)) {
+                System.out.println("Begin from here!!!!!!!!!!!!!  " + i);
                 handlePageFault(i);
             }
             sync(pageTable[i], VMKernel.getEntry(pid, i));
-            VMKernel.pin(VMKernel.getEntry(pid, i).ppn);
+            //VMKernel.pin(VMKernel.getEntry(pid, i).ppn);
         }
         return super.readVirtualMemory(vaddr, data, offset, length);
     }
