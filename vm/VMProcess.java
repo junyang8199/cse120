@@ -37,12 +37,12 @@ public class VMProcess extends UserProcess {
 	 */
 	public void restoreState() {
 		Lib.debug(dbgVM, "\trestore state for process" + pid);
-
 		// 1. synchronize TLB: set the entry as valid if this entry exist in inverted page table
         for (int i = 0; i < Machine.processor().getTLBSize(); i++) {
             TranslationEntry TLBEntry= Machine.processor().readTLBEntry(i);
             if (VMKernel.pageInMemory(pid, TLBEntry.vpn)) {
                 TranslationEntry entry = VMKernel.getEntry(pid, TLBEntry.vpn);
+                System.out.println("set TLBEntry " + TLBEntry.vpn + " as true");
                 TLBEntry.valid = true;
                 sync(TLBEntry, entry);
                 Machine.processor().writeTLBEntry(i, entry);
@@ -54,6 +54,7 @@ public class VMProcess extends UserProcess {
             TranslationEntry PTEntry = pageTable[i];
             if (VMKernel.pageInMemory(pid, i)) {
                 TranslationEntry entry = VMKernel.getEntry(pid, i);
+                System.out.println("set PTEntry " + PTEntry.vpn + " as true");
                 PTEntry.valid = true;
                 sync(PTEntry, entry);
             }
