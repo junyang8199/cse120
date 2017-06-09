@@ -229,6 +229,7 @@ public class VMProcess extends UserProcess {
 
         // ------demand paging------
         else {
+            System.out.println("handle page fault for: " + vaddr);
 			entry = handlePageFault(vpn);
 			pageTable[vpn].valid = true;
 			sync(pageTable[vpn], entry);
