@@ -73,6 +73,7 @@ public class VMKernel extends UserKernel {
 
         // there still has free page in memory
         if (freePageIndex != -1) {
+            System.out.println("Good new!!!!! We have page to use!!!! " + freePageIndex);
             int ppn = freePageIndex;
             TranslationEntry entry = new TranslationEntry(vpn, ppn,
                     true, false, false, false);
@@ -97,6 +98,7 @@ public class VMKernel extends UserKernel {
             page.entry.vpn = vpn;
             page.entry.valid = true;
             page.pid = pid;
+            System.out.println("Bad news....... We have allocated " + page.entry.ppn);
         }
 
         memoryLock.acquire();
