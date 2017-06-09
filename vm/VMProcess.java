@@ -249,11 +249,15 @@ public class VMProcess extends UserProcess {
                 for (int i = 0; i < coff.getNumSections(); i++) {
                     CoffSection section = coff.getSection(i);
                     for (int j = 0; j < section.getLength(); j++) {
-                        if (vpn == section.getFirstVPN() + j) section.loadPage(j, entry.ppn);
+                        if (vpn == section.getFirstVPN() + j) {
+                            section.loadPage(j, entry.ppn);
+                            System.out.println("load content for " + vpn);
+                        }
                     }
                 }
             }
             else {
+                System.out.println("set 0 for " + vpn);
                 Arrays.fill(Machine.processor().getMemory(), entry.ppn * pageSize,
                         (entry.ppn + 1) * pageSize, (byte)0);
             }
