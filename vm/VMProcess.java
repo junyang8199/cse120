@@ -147,6 +147,7 @@ public class VMProcess extends UserProcess {
                 handlePageFault(i);
             }
             sync(pageTable[i], VMKernel.getEntry(pid, i));
+            pageTable[i].dirty = pageTable[i].used = true;
             //VMKernel.pin(VMKernel.getEntry(pid, i).ppn);
         }
         return super.readVirtualMemory(vaddr, data, offset, length);
