@@ -143,7 +143,7 @@ public class VMKernel extends UserKernel {
         }
 
         // remove the mapping from inverted page table
-        invertedPageTable.remove(new TableKey(page.entry.vpn, page.pid));
+        invertedPageTable.remove(new TableKey(page.pid, page.entry.vpn));
 
         // make sure this page is unpinned
         page.pinned = false;
