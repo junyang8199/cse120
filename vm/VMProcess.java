@@ -240,6 +240,7 @@ public class VMProcess extends UserProcess {
         TranslationEntry entry = VMKernel.allocatePage(pid, vpn);
         for (TranslationEntry myEntry: pageTable) {
             if (myEntry.ppn == entry.ppn) myEntry.valid = false;
+            System.out.println("ppn is -------->" + entry.ppn + " vpn is ---------> " + myEntry.vpn);
         }
         pageTable[vpn].valid = true;
         pageTable[vpn].ppn = entry.ppn;
