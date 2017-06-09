@@ -167,7 +167,7 @@ public class VMProcess extends UserProcess {
 
         for (int i = vpn; i < total + 1; i++) {
             if (!VMKernel.pageInMemory(pid, i)) {
-                System.out.println("Begin from here!!!!!!!!!!!!!  " + i);
+                //System.out.println("Begin from here!!!!!!!!!!!!!  " + i);
                 handleTLBMiss(i);
             }
             sync(pageTable[i], VMKernel.getEntry(pid, i));
