@@ -50,6 +50,7 @@ public class VMProcess extends UserProcess {
                 Machine.processor().writeTLBEntry(i, entry);
             }
         }
+         */
 
 
         // 2. synchronize process' personal page table
@@ -62,7 +63,7 @@ public class VMProcess extends UserProcess {
                 sync(PTEntry, entry);
             }
         }
-         */
+
 	}
 
     /**
