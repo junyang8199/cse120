@@ -152,7 +152,7 @@ public class VMProcess extends UserProcess {
                 handlePageFault(i);
             }
             sync(pageTable[i], VMKernel.getEntry(pid, i));
-            pageTable[i].dirty = pageTable[i].used = true;
+            //pageTable[i].dirty = pageTable[i].used = true;
             //VMKernel.pin(VMKernel.getEntry(pid, i).ppn);
         }
         return super.readVirtualMemory(vaddr, data, offset, length);
@@ -175,6 +175,7 @@ public class VMProcess extends UserProcess {
             }
             sync(pageTable[i], VMKernel.getEntry(pid, i));
             VMKernel.pin(VMKernel.getEntry(pid, i).ppn);
+            pageTable[i].dirty = pageTable[i].used = true;
         }
         return super.readVirtualMemory(vaddr, data, offset, length);
     }
