@@ -15,8 +15,8 @@
  * 11/29/15
  */
 
-int bigbufnum = 16 * 1024 / sizeof (int);
-int bigbuf[16 * 1024 / sizeof (int)];
+int bigbufnum = 10;//16 * 1024 / sizeof (int);
+int bigbuf[10];//[16 * 1024 / sizeof (int)];
 
 void
 init_buf ()
