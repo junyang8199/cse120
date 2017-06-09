@@ -242,11 +242,14 @@ public class VMProcess extends UserProcess {
             if (myEntry.ppn == entry.ppn && myEntry.valid) {
                 myEntry.valid = false;
                 System.out.println("ppn is -------->" + entry.ppn + " vpn is ---------> " + myEntry.vpn);
+                if (myEntry.vpn == 1)
+                    System.out.println("valid????????????????  " + pageTable[1].valid);
             }
 
         }
         pageTable[vpn].valid = true;
         pageTable[vpn].ppn = entry.ppn;
+
         //sync(pageTable[vpn], entry);
         // 2. fill out the page
         if (!VMKernel.pageInSwapFile(pid, vpn)) {
