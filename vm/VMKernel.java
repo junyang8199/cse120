@@ -18,9 +18,10 @@ public class VMKernel extends UserKernel {
 	 */
 	public VMKernel() {
 		super();
-        Arrays.fill(physicalPages, null);
+        //Arrays.fill(physicalPages, null);
         //memoryLock = new Lock();
         pinCond = new Condition(memoryLock);
+
     }
 
 	/**
