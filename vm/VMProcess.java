@@ -242,14 +242,15 @@ public class VMProcess extends UserProcess {
 	    // 1. allocate a page in memory
         TranslationEntry entry = VMKernel.allocatePage(pid, vpn);
         pageTable[vpn].valid = true;
-        sync(pageTable[vpn], entry);
+        //sync(pageTable[vpn], entry);
         // 2. fill out the page
         if (!VMKernel.pageInSwapFile(pid, vpn)) {
-            if (vpn >= 0) {
+            if (vpn >= 0 ) {
                 for (int i = 0; i < coff.getNumSections(); i++) {
                     CoffSection section = coff.getSection(i);
                     for (int j = 0; j < section.getLength(); j++) {
                         if (vpn == section.getFirstVPN() + j) section.loadPage(j, entry.ppn);
+                        if (section.isReadOnly()) entry.readOnly = true;
                     }
                 }
             }
