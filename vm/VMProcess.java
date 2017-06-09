@@ -143,7 +143,7 @@ public class VMProcess extends UserProcess {
     public int readVirtualMemory(int vaddr, byte[] data, int offset, int length) {
 	    int vpn = Processor.pageFromAddress(vaddr);
 	    int total = Processor.pageFromAddress(vaddr + length);
-
+        System.out.println("try to read virtual memory");
         for (int i = vpn; i < total + 1; i++) {
             if (!VMKernel.pageInMemory(pid, i)) {
                 //System.out.println("Begin from here!!!!!!!!!!!!!  " + i);
@@ -164,7 +164,7 @@ public class VMProcess extends UserProcess {
     public int writeVirtualMemory(int vaddr, byte[] data, int offset, int length) {
         int vpn = Processor.pageFromAddress(vaddr);
         int total = Processor.pageFromAddress(vaddr + length);
-
+        System.out.println("try to write virtual memory!!!");
         for (int i = vpn; i < total + 1; i++) {
             if (!VMKernel.pageInMemory(pid, i)) {
                 //System.out.println("Begin from here!!!!!!!!!!!!!  " + i);
@@ -252,13 +252,13 @@ public class VMProcess extends UserProcess {
                     for (int j = 0; j < section.getLength(); j++) {
                         if (vpn == section.getFirstVPN() + j) {
                             section.loadPage(j, entry.ppn);
-                            System.out.println("load content for " + vpn);
+                            //System.out.println("load content for " + vpn);
                         }
                     }
                 }
             }
             else {
-                System.out.println("set 0 for " + vpn);
+                //System.out.println("set 0 for " + vpn);
                 Arrays.fill(Machine.processor().getMemory(), entry.ppn * pageSize,
                         (entry.ppn + 1) * pageSize, (byte)0);
             }
