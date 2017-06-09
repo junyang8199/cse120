@@ -42,7 +42,7 @@ public class VMProcess extends UserProcess {
             TranslationEntry TLBEntry= Machine.processor().readTLBEntry(i);
             if (VMKernel.pageInMemory(pid, TLBEntry.vpn)) {
                 TranslationEntry entry = VMKernel.getEntry(pid, TLBEntry.vpn);
-                System.out.println("set TLBEntry " + TLBEntry.vpn + " as true");
+                //System.out.println("set TLBEntry " + TLBEntry.vpn + " as true");
                 TLBEntry.valid = true;
                 sync(TLBEntry, entry);
                 Machine.processor().writeTLBEntry(i, entry);
@@ -54,7 +54,7 @@ public class VMProcess extends UserProcess {
             TranslationEntry PTEntry = pageTable[i];
             if (VMKernel.pageInMemory(pid, i)) {
                 TranslationEntry entry = VMKernel.getEntry(pid, i);
-                System.out.println("set PTEntry " + PTEntry.vpn + " as true");
+                //System.out.println("set PTEntry " + PTEntry.vpn + " as true");
                 PTEntry.valid = true;
                 sync(PTEntry, entry);
             }
@@ -161,7 +161,7 @@ public class VMProcess extends UserProcess {
     public int writeVirtualMemory(int vaddr, byte[] data, int offset, int length) {
         int vpn = Processor.pageFromAddress(vaddr);
         int total = Processor.pageFromAddress(vaddr + length);
-        System.out.println("try to write virtual memory!!!");
+        //System.out.println("try to write virtual memory!!!");
         for (int i = vpn; i < total + 1; i++) {
             if (!VMKernel.pageInMemory(pid, i)) {
                 //System.out.println("Begin from here!!!!!!!!!!!!!  " + i);
