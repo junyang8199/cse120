@@ -339,7 +339,7 @@ public class VMKernel extends UserKernel {
          * @param ppn
          */
         static void swapIn(int pid, int vpn, int ppn) {
-
+            System.out.println("I swap " + vpn + " in!!!!!!");
             // get the corresponding page from swap file
             SwapPage page = swapPageTable.get(new TableKey(pid, vpn));
 
@@ -365,6 +365,7 @@ public class VMKernel extends UserKernel {
          * @param page
          */
         static void swapOut(MemoryPage page) {
+            System.out.println("I swap " + page.entry.vpn + " out");
             if (!page.entry.valid) return;
 
             // find available position
