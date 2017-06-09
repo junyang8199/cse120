@@ -250,7 +250,9 @@ public class VMProcess extends UserProcess {
                     CoffSection section = coff.getSection(i);
                     for (int j = 0; j < section.getLength(); j++) {
                         if (vpn == section.getFirstVPN() + j) section.loadPage(j, entry.ppn);
-                        if (section.isReadOnly()) entry.readOnly = true;
+                        if (section.isReadOnly()) {
+                            entry.readOnly = true;
+                        }
                     }
                 }
             }
