@@ -268,10 +268,12 @@ public class VMProcess extends UserProcess {
                     for (int j = 0; j < section.getLength(); j++) {
                         if (vpn == section.getFirstVPN() + j) {
                             section.loadPage(j, entry.ppn);
+                            /**
                             if (section.isReadOnly()) {
                                 entry.readOnly = true;
                                 VMKernel.getEntry(pid, vpn).readOnly = true;
                             }
+                             */
                             //System.out.println("load content for " + vpn);
                         }
                     }
