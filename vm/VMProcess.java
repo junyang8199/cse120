@@ -204,7 +204,7 @@ public class VMProcess extends UserProcess {
      */
 	private void handleTLBMiss(int vaddr) {
 
-
+        System.out.println("handleTLBMissException: begin to handle exception");
 		Lib.debug(dbgVM, "\thandleTLBMissException: begin to handle exception");
         int vpn = Processor.pageFromAddress(vaddr);
         /**
@@ -219,6 +219,7 @@ public class VMProcess extends UserProcess {
         int index = Lib.random(Machine.processor().getTLBSize());
         // if entry is valid, then replace a TLB entry and leave
         if (entry.valid) {
+            System.out.println("Found mapping in page table for vpn: " + vpn);
             for (int i = 0; i < Machine.processor().getTLBSize(); i++) {
                 if (Machine.processor().readTLBEntry(i).valid == false) {
                     index = i;
