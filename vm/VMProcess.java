@@ -331,12 +331,14 @@ public class VMProcess extends UserProcess {
         //sync(pageTable[vpn], entry);
         // 2. fill out the page
         if (!VMKernel.pageInSwapFile(pid, vpn)) {
+            //For code:
             if (vpn >= 0 && vpn < pageTable.length - 8) {
                 for (int i = 0; i < coff.getNumSections(); i++) {
                     CoffSection section = coff.getSection(i);
                     for (int j = 0; j < section.getLength(); j++) {
                         if (vpn == section.getFirstVPN() + j) {
                             section.loadPage(j, entry.ppn);
+                            System.out.println("load code in!!! " + "VPN: " + vpn + "PPN: " + entry.ppn);
 
                             if (section.isReadOnly()) {
                                 entry.readOnly = true;
