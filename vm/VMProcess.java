@@ -401,6 +401,7 @@ public class VMProcess extends UserProcess {
                 //System.out.println("set 0 for " + vpn);
                 Arrays.fill(Machine.processor().getMemory(), entry.ppn * pageSize,
                         (entry.ppn + 1) * pageSize, (byte)0);
+                System.out.println("I'm STACKKKKKK :      FILL ZERO");
             }
         }
         else {
