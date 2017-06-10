@@ -104,7 +104,7 @@ public class VMProcess extends UserProcess {
 	 * Release any resources allocated by <tt>loadSections()</tt>.
 	 */
 	protected void unloadSections() {
-
+        System.out.println("UNNNNNNNNNNNload sections!!~~~~~");
 	    VMKernel.memoryLock.acquire();
         for (TranslationEntry entry: pageTable) {
 
