@@ -318,7 +318,8 @@ public class VMProcess extends UserProcess {
         Machine.processor().writeTLBEntry(index, entry);
 	}
 
-	private TranslationEntry handlePageFault(int vpn) {
+	private TranslationEntry
+    handlePageFault(int vpn) {
 
 	    // 1. allocate a page in memory
         TranslationEntry entry = VMKernel.allocatePage(pid, vpn);

@@ -100,6 +100,9 @@ public class VMKernel extends UserKernel {
             page.entry.valid = true;
             page.pid = pid;
             page.entry.used = true;
+
+            page.entry.readOnly = false;
+
             System.out.println("Bad news....... We have allocated " + page.entry.ppn);
         }
 
