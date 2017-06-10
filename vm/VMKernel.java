@@ -99,6 +99,7 @@ public class VMKernel extends UserKernel {
             page.entry.vpn = vpn;
             page.entry.valid = true;
             page.pid = pid;
+            page.entry.used = true;
             System.out.println("Bad news....... We have allocated " + page.entry.ppn);
         }
 
@@ -259,7 +260,7 @@ public class VMKernel extends UserKernel {
 	protected static Hashtable<TableKey, MemoryPage> invertedPageTable = new Hashtable<>();
 
 	// an array of physical pages in memory indexed by ppn
-    private static MemoryPage[] physicalPages = new MemoryPage[Machine.processor().getNumPhysPages()];
+    protected static MemoryPage[] physicalPages = new MemoryPage[Machine.processor().getNumPhysPages()];
 
 
 	public static class MemoryPage {

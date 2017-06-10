@@ -2,6 +2,7 @@ package nachos.vm;
 
 import nachos.machine.*;
 import nachos.userprog.*;
+import sun.misc.VM;
 
 
 import java.util.Arrays;
@@ -304,7 +305,7 @@ public class VMProcess extends UserProcess {
             System.out.println("handle page fault for: " + vaddr + "; vpn is: " + vpn);
 			entry = handlePageFault(vpn);
 			pageTable[vpn].valid = true;
-			sync(pageTable[vpn], entry);
+			//sync(pageTable[vpn], entry);
         }
         Machine.processor().writeTLBEntry(index, entry);
 	}
@@ -325,6 +326,7 @@ public class VMProcess extends UserProcess {
         }
         pageTable[vpn].valid = true;
         pageTable[vpn].ppn = entry.ppn;
+        pageTable[vpn].used = true;
 
         //sync(pageTable[vpn], entry);
         // 2. fill out the page
@@ -335,12 +337,13 @@ public class VMProcess extends UserProcess {
                     for (int j = 0; j < section.getLength(); j++) {
                         if (vpn == section.getFirstVPN() + j) {
                             section.loadPage(j, entry.ppn);
-                            /**
+
                             if (section.isReadOnly()) {
                                 entry.readOnly = true;
+                                pageTable[vpn].readOnly = true;
                                 VMKernel.getEntry(pid, vpn).readOnly = true;
+                                VMKernel.physicalPages[entry.ppn].entry.readOnly = true;
                             }
-                             */
                             //System.out.println("load content for " + vpn);
                         }
                     }
