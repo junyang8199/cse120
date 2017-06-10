@@ -89,7 +89,7 @@ public class VMProcess extends UserProcess {
 	protected boolean loadSections() {
         // initialize the page table and set them as invalid
 		UserKernel.memoryLock.acquire();
-
+        System.out.println("$$$$$$$$$$$$WE HAVE " + numPages + " PAGES$$$$$$$$");
         pageTable = new TranslationEntry[numPages];
 		for (int i = 0; i < pageTable.length; i++) {
 			pageTable[i] = new TranslationEntry(i, i,
