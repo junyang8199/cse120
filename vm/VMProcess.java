@@ -145,7 +145,7 @@ public class VMProcess extends UserProcess {
     public int readVirtualMemory(int vaddr, byte[] data, int offset, int length) {
 	    int vpn = Processor.pageFromAddress(vaddr);
 	    int total = Processor.pageFromAddress(vaddr + length);
-        System.out.println("try to read virtual memory");
+        System.out.println("try to read virtual memory, VPN from " + vpn + "to " + total);
         for (int i = vpn; i < total + 1; i++) {
             if (!VMKernel.pageInMemory(pid, i)) {
                 //System.out.println("Begin from here!!!!!!!!!!!!!  " + i);
