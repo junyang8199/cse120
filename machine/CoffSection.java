@@ -192,9 +192,10 @@ public class CoffSection {
 
 		if (initlen > 0)
 			Lib.strictReadFile(file, faddr, memory, paddr, initlen);
-			//System.out.println("LOAD PAGE FROM COFFSECTION->> " + "faddr: " + faddr + "initlen: " + initlen);
+			System.out.println("LOAD PAGE FROM COFFSECTION->> " + "faddr: " + faddr + "initlen: " + initlen);
 
 		Arrays.fill(memory, paddr + initlen, paddr + pageSize, (byte) 0);
+		System.out.println("Fill CODE PAGE TO 0->> " + "from: " + paddr + initlen + "to: " + paddr + pageSize);
 	}
 
 	/** The COFF object to which this section belongs. */
