@@ -145,7 +145,7 @@ public class VMProcess extends UserProcess {
     public int readVirtualMemory(int vaddr, byte[] data, int offset, int length) {
 	    int vpn = Processor.pageFromAddress(vaddr);
 	    int total = Processor.pageFromAddress(vaddr + length);
-        System.out.println("try to read virtual memory, VPN from " + vpn + "to " + total);
+        System.out.println("RRRRRRRRRRRtry to read virtual memory, VPN from " + vpn + "to " + total);
         for (int i = vpn; i < total + 1; i++) {
             if (!VMKernel.pageInMemory(pid, i)) {
                 //System.out.println("Begin from here!!!!!!!!!!!!!  " + i);
@@ -202,7 +202,7 @@ public class VMProcess extends UserProcess {
     public int writeVirtualMemory(int vaddr, byte[] data, int offset, int length) {
         int vpn = Processor.pageFromAddress(vaddr);
         int total = Processor.pageFromAddress(vaddr + length);
-        System.out.println("try to write virtual memory!!!");
+        System.out.println("WWWWWWWWWWtry to write virtual memory!!!");
         for (int i = vpn; i < total + 1; i++) {
             if (!VMKernel.pageInMemory(pid, i)) {
                 //System.out.println("Begin from here!!!!!!!!!!!!!  " + i);
@@ -212,7 +212,39 @@ public class VMProcess extends UserProcess {
             VMKernel.pin(VMKernel.getEntry(pid, i).ppn);
             pageTable[i].dirty = pageTable[i].used = true;
         }
-        return super.readVirtualMemory(vaddr, data, offset, length);
+        //return super.readVirtualMemory(vaddr, data, offset, length);
+
+        //Check if arguments are valid.
+        Lib.assertTrue(offset >= 0 && length >= 0
+                && offset + length <= data.length);
+
+        //Check if this writing exceeds the process's address space.
+        //If it exceeds, the writing is illegal, return 0.
+        int firstVPN = Processor.pageFromAddress(vaddr);
+        int lastVPN = Processor.pageFromAddress(vaddr + length);
+        if (firstVPN < 0 || lastVPN > numPages) {
+            return 0;
+        }
+
+        //Get the reference of physical memory array.
+        byte[] memory = Machine.processor().getMemory();
+
+        //Write data from the data array to physical memory.
+        //Virtual address in the transfer is continuous, physical is not.
+        //Virtual memory -> page table -> physical memory -> memory array
+        int writeBytes = 0;
+        while (writeBytes < length) {
+            int vaddrStart = vaddr + writeBytes;
+            int VPN = Processor.pageFromAddress(vaddrStart);
+            int pagePosition = Processor.offsetFromAddress(vaddrStart);
+            int bytesToWrite = Math.min(pageSize - pagePosition, length - writeBytes);
+            int phyaddrStart = pageTable[VPN].ppn * pageSize + pagePosition;
+            System.arraycopy(data, offset + writeBytes, memory,
+                    phyaddrStart, bytesToWrite);
+            writeBytes += bytesToWrite;
+        }
+
+        return writeBytes;
     }
 
 	/**
