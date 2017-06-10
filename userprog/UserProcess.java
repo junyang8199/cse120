@@ -213,6 +213,7 @@ public class UserProcess {
 	 * @return the number of bytes successfully transferred.
 	 */
 	public int writeVirtualMemory(int vaddr, byte[] data, int offset, int length) {
+		System.out.println("?????????????--->Super's write VM");
 		//Check if arguments are valid.
 		Lib.assertTrue(offset >= 0 && length >= 0
 				&& offset + length <= data.length);
@@ -323,10 +324,13 @@ public class UserProcess {
 		for (int i = 0; i < argv.length; i++) {
 			byte[] stringOffsetBytes = Lib.bytesFromInt(stringOffset);
 			Lib.assertTrue(writeVirtualMemory(entryOffset, stringOffsetBytes) == 4);
+			System.out.println("@@@@@@@@@@--->After 1 writeVM in load");
 			entryOffset += 4;
 			Lib.assertTrue(writeVirtualMemory(stringOffset, argv[i]) == argv[i].length);
+			System.out.println("@@@@@@@@@@--->After 2 writeVM in load");
 			stringOffset += argv[i].length;
 			Lib.assertTrue(writeVirtualMemory(stringOffset, new byte[] { 0 }) == 1);
+			System.out.println("@@@@@@@@@@--->After 3 writeVM in load");
 			stringOffset += 1;
 		}
 
