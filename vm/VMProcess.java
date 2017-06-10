@@ -306,6 +306,13 @@ public class VMProcess extends UserProcess {
 			entry = handlePageFault(vpn);
 			pageTable[vpn].valid = true;
 			//sync(pageTable[vpn], entry);
+
+            for (int i = 0; i < Machine.processor().getTLBSize(); i++) {
+                if (Machine.processor().readTLBEntry(i).valid == false) {
+                    index = i;
+                    break;
+                }
+            }
         }
         Machine.processor().writeTLBEntry(index, entry);
 	}
