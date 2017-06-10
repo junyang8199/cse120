@@ -25,14 +25,14 @@ int main() {
         return -1;
     }
     else if (openResult == descriptor) {
-        printf("open successful: file descriptor: " + descriptor_try);
+        printf("open successful: file descriptor: " + descriptor);
     }
 
     // check write file
     // return number of bytes written if success, return -1 if fail
     printf("3. write file check \n");
-    int* p = new int(1);
-    void *toWrite = p;
+    //int* p = new int(1);
+    void *toWrite = "pppp";
     int writeResult = write(descriptor, toWrite, 1);
     if (writeResult != 1) {
         printf("write failed");
@@ -49,7 +49,9 @@ int main() {
         printf("read failed");
         return -1;
     }
-    else if (readResult == 1) (printf("read successful");
+    else if (readResult == 1) {
+        printf("read successful");
+    }
 
     // check close
     // return 0 if success, return -1 if fail
