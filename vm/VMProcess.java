@@ -282,6 +282,7 @@ public class VMProcess extends UserProcess {
         System.out.println("handleTLBMissException: begin to handle exception");
 		Lib.debug(dbgVM, "\thandleTLBMissException: begin to handle exception");
         int vpn = Processor.pageFromAddress(vaddr);
+        System.out.println("vaddr: ============>" + vaddr);
         /**
         if (vpn > numPages) {
             extendPageTable(vpn);
