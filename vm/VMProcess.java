@@ -333,6 +333,7 @@ public class VMProcess extends UserProcess {
         if (!VMKernel.pageInSwapFile(pid, vpn)) {
             //For code:
             if (vpn >= 0 && vpn < pageTable.length - 8) {
+                System.out.println("&&&&&Wo jin lai le, wo shi: " + vpn);
                 for (int i = 0; i < coff.getNumSections(); i++) {
                     CoffSection section = coff.getSection(i);
                     for (int j = 0; j < section.getLength(); j++) {
