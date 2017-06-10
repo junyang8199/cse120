@@ -155,7 +155,42 @@ public class VMProcess extends UserProcess {
             //pageTable[i].dirty = pageTable[i].used = true;
             //VMKernel.pin(VMKernel.getEntry(pid, i).ppn);
         }
-        return super.readVirtualMemory(vaddr, data, offset, length);
+        //return super.readVirtualMemory(vaddr, data, offset, length);
+
+        //Super():
+        //Check if arguments are valid.
+        Lib.assertTrue(offset >= 0 && length >= 0
+                && offset + length <= data.length);
+
+        //Check if this reading exceeds the process's address space.
+        //If it exceeds, the reading is illegal, return 0.
+        int firstVPN = Processor.pageFromAddress(vaddr);
+        int lastVPN = Processor.pageFromAddress(vaddr + length);
+        if (firstVPN < 0 || lastVPN > numPages) {
+            return 0;
+        }
+        //Get the reference of physical memory array.
+        byte[] memory = Machine.processor().getMemory();
+
+        //Read data from physical memory to the data array.
+        //Virtual address in the transfer is continuous, physical is not.
+        //Virtual memory -> page table -> physical memory -> memory array
+        int readBytes = 0;
+        while (readBytes < length) {
+            int vaddrStart = vaddr + readBytes;
+            //Compute vpm
+            int VPN = Processor.pageFromAddress(vaddrStart);
+            //Compute offset
+            int pagePosition = Processor.offsetFromAddress(vaddrStart);
+            int bytesToRead = Math.min(pageSize - pagePosition, length - readBytes);
+            //Compute physical address
+            int phyaddrStart = pageTable[VPN].ppn * pageSize + pagePosition;
+            System.arraycopy(memory, phyaddrStart, data,
+                    offset + readBytes, bytesToRead);
+            readBytes += bytesToRead;
+        }
+
+        return readBytes;
     }
 
     @Override

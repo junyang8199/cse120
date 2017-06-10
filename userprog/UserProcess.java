@@ -177,7 +177,6 @@ public class UserProcess {
 			int bytesToRead = Math.min(pageSize - pagePosition, length - readBytes);
 			//Compute physical address
 			int phyaddrStart = pageTable[vpn].ppn * pageSize + pagePosition;
-			System.out.println("#####Try to read VPN: " + vpn);
 			System.arraycopy(memory, phyaddrStart, data,
 					offset + readBytes, bytesToRead);
 			readBytes += bytesToRead;
