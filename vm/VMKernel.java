@@ -326,6 +326,7 @@ public class VMKernel extends UserKernel {
 
         // track the empty position in middle
         static HashSet<Integer> availablePosition;
+
         SwapFile() {
             swapFile = ThreadedKernel.fileSystem.open("swapFile", true);
             swapPageTable = new Hashtable<>();
