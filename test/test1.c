@@ -43,8 +43,9 @@ int main() {
     // check read file
     // return number of bytes read if success, return -1 if fail
     printf("4. read file check \n");
+    int readSource = open("file1.txt");
     void *toRead;
-    int readResult = read(descriptor, toRead, 1);
+    int readResult = read(readSource, toRead, 1);
     if (readResult != 1) {
         printf("read failed, Read result:      %d", readResult);
 
