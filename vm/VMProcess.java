@@ -320,8 +320,7 @@ public class VMProcess extends UserProcess {
         Machine.processor().writeTLBEntry(index, entry);
 	}
 
-	private TranslationEntry
-    handlePageFault(int vpn) {
+	private TranslationEntry handlePageFault(int vpn) {
 
 	    // 1. allocate a page in memory
         TranslationEntry entry = VMKernel.allocatePage(pid, vpn);
@@ -344,7 +343,7 @@ public class VMProcess extends UserProcess {
 
         //sync(pageTable[vpn], entry);
         // 2. fill out the page
-        if (!VMKernel.pageInSwapFile(pid, vpn)) {
+        /* if (!VMKernel.pageInSwapFile(pid, vpn)) {
             //For code:
             if (vpn >= 0) {
                 System.out.println("&&&&&Wo jin lai le, wo shi: " + vpn);
@@ -374,7 +373,39 @@ public class VMProcess extends UserProcess {
         }
         else {
             VMKernel.swapSpace.swapIn(pid, vpn, entry.ppn);
+        } */
+
+        if (!VMKernel.pageInSwapFile(pid, vpn)) {
+            //For code:
+            boolean ifCode = false;
+            System.out.println("&&&&&Wo jin lai le, wo shi: " + vpn);
+            for (int i = 0; i < coff.getNumSections(); i++) {
+                CoffSection section = coff.getSection(i);
+                for (int j = 0; j < section.getLength(); j++) {
+                    if (vpn == section.getFirstVPN() + j) {
+                        ifCode = true;
+                        section.loadPage(j, entry.ppn);
+                        System.out.println(">>>>>>>>>>>>>>>load code in!!! " + "VPN: " + vpn + "PPN: " + entry.ppn);
+                        if (section.isReadOnly()) {
+                            entry.readOnly = true;
+                            pageTable[vpn].readOnly = true;
+                            VMKernel.getEntry(pid, vpn).readOnly = true;
+                            VMKernel.physicalPages[entry.ppn].entry.readOnly = true;
+                        }
+                        //System.out.println("load content for " + vpn);
+                    }
+                }
+            }
+            if (ifCode == false) {
+                //System.out.println("set 0 for " + vpn);
+                Arrays.fill(Machine.processor().getMemory(), entry.ppn * pageSize,
+                        (entry.ppn + 1) * pageSize, (byte)0);
+            }
         }
+        else {
+            VMKernel.swapSpace.swapIn(pid, vpn, entry.ppn);
+        }
+
         return entry;
     }
 
