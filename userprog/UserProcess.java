@@ -525,6 +525,7 @@ public class UserProcess {
 	 * Handle the read(int fileDescriptor, void *buffer, int count) system call.
 	 */
 	private int handleRead(int desp, int vaddr_bufStart, int count) {
+		System.out.println("HANDLE HANDLE HANDLE RRRRRRRRRRRRRRRR");
 		//Check if the file descriptor is valid.
 		if (desp < 0 || desp > 15 || openFiles[desp] == null || count < 0) {
 			return -1;
@@ -558,6 +559,7 @@ public class UserProcess {
 	 * Handle the write(int fileDescriptor, void *buffer, int count) system call.
 	 */
 	private int handleWrite(int desp, int vaddr_bufStart, int count) {
+		System.out.println("HANDLE HANDLE HANDLE WWWWWWWWWWWWWWWWWWWWWW");
 		//Check if the file descriptor is available.
 		if (desp < 0 || desp > 15 || openFiles[desp] == null || count < 0) {
 	//		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!here1");
