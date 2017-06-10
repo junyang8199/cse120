@@ -212,7 +212,9 @@ public class VMProcess extends UserProcess {
             sync(pageTable[i], VMKernel.getEntry(pid, i));
             VMKernel.pin(VMKernel.getEntry(pid, i).ppn);
             pageTable[i].dirty = pageTable[i].used = true;
-            VMKernel.physicalPages[i].entry.dirty = true;
+            int ppn = pageTable[i].ppn;
+            VMKernel.physicalPages[ppn].entry.dirty = true;
+            System.out.println("==============I'm so dirty now, I'm ppn ------- " + ppn);
         }
         //return super.readVirtualMemory(vaddr, data, offset, length);
 
