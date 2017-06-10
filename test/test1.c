@@ -46,7 +46,7 @@ int main() {
     void *toRead;
     int readResult = read(descriptor, toRead, 1);
     if (readResult != 1) {
-        printf("read failed" + " Read result:      " + readResult);
+        printf("read failed, Read result:      %d", readResult);
 
         return -1;
     }
