@@ -63,15 +63,15 @@ int main() {
     }
     else printf("close successful");
 
-    // check uplink
+    // check unlink
     // return 0 if success, return -1 if fail
-    printf("6. uplink file check \n");
-    int uplinkResult = uplink(filename);
+    printf("6. unlink file check \n");
+    int uplinkResult = unlink(filename);
     if (uplinkResult == -1) {
-        printf("uplink failed");
+        printf("unlink failed");
         return -1;
     }
-    else printf("uplink successful");
+    else printf("unlink successful");
 
     return 0;
 
