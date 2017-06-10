@@ -315,12 +315,13 @@ public class VMProcess extends UserProcess {
 	    // 1. allocate a page in memory
         TranslationEntry entry = VMKernel.allocatePage(pid, vpn);
 
-        for (TranslationEntry myEntry: pageTable) {
-            if (myEntry.ppn == entry.ppn && myEntry.valid) {
+        //for (TranslationEntry myEntry: pageTable) {
+        for (int i = 0; i < pageTable.length; i++) {
+            TranslationEntry myEntry = pageTable[i];
+
+            if (myEntry.valid && myEntry.ppn == entry.ppn) {
                 myEntry.valid = false;
                 System.out.println("ppn is -------->" + entry.ppn + " vpn is ---------> " + myEntry.vpn);
-                if (myEntry.vpn == 1)
-                    System.out.println("valid????????????????  " + pageTable[1].valid);
             }
 
         }
@@ -338,9 +339,9 @@ public class VMProcess extends UserProcess {
                     CoffSection section = coff.getSection(i);
                     for (int j = 0; j < section.getLength(); j++) {
                         if (vpn == section.getFirstVPN() + j) {
-                            section.loadPage(j, entry.ppn);
-                            System.out.println("load code in!!! " + "VPN: " + vpn + "PPN: " + entry.ppn);
 
+                            section.loadPage(j, entry.ppn);
+                            System.out.println(">>>>>>>>>>>>>>>load code in!!! " + "VPN: " + vpn + "PPN: " + entry.ppn);
                             if (section.isReadOnly()) {
                                 entry.readOnly = true;
                                 pageTable[vpn].readOnly = true;
