@@ -37,7 +37,7 @@ public class VMProcess extends UserProcess {
 	 */
 	public void restoreState() {
 		Lib.debug(dbgVM, "\trestore state for process" + pid);
-		System.out.println("Context Switch HAPPENS!!!!!!!!!!!!!!!!!!!!!");
+		//System.out.println("Context Switch HAPPENS!!!!!!!!!!!!!!!!!!!!!");
 		// 1. synchronize TLB: set the entry as valid if this entry exist in inverted page table
         /**
         for (int i = 0; i < Machine.processor().getTLBSize(); i++) {
