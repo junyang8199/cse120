@@ -203,7 +203,7 @@ public class VMProcess extends UserProcess {
     public int writeVirtualMemory(int vaddr, byte[] data, int offset, int length) {
         int vpn = Processor.pageFromAddress(vaddr);
         int total = Processor.pageFromAddress(vaddr + length);
-        System.out.println("WWWWWWWWWWtry to write virtual memory!!!");
+        System.out.println("WWWWWWWWWW try to write virtual memory!!!");
         for (int i = vpn; i < total + 1; i++) {
             if (!VMKernel.pageInMemory(pid, i)) {
                 //System.out.println("Begin from here!!!!!!!!!!!!!  " + i);
@@ -214,7 +214,7 @@ public class VMProcess extends UserProcess {
             pageTable[i].dirty = pageTable[i].used = true;
             int ppn = pageTable[i].ppn;
             VMKernel.physicalPages[ppn].entry.dirty = true;
-            System.out.println("==============I'm so dirty now, I'm ppn ------- " + ppn);
+            System.out.println("==============I'm dirty now, I'm ppn ------- " + ppn);
         }
         //return super.readVirtualMemory(vaddr, data, offset, length);
 
@@ -332,6 +332,7 @@ public class VMProcess extends UserProcess {
 
             if (myEntry.valid && myEntry.ppn == entry.ppn) {
                 myEntry.valid = false;
+                myEntry.readOnly = false;
                 System.out.println("ppn is -------->" + entry.ppn + " vpn is ---------> " + myEntry.vpn);
             }
 
@@ -339,6 +340,7 @@ public class VMProcess extends UserProcess {
         pageTable[vpn].valid = true;
         pageTable[vpn].ppn = entry.ppn;
         pageTable[vpn].used = true;
+        pageTable[vpn].readOnly = false;
 
         //sync(pageTable[vpn], entry);
         // 2. fill out the page
