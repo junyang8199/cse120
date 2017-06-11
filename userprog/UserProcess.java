@@ -213,7 +213,6 @@ public class UserProcess {
 	 * @return the number of bytes successfully transferred.
 	 */
 	public int writeVirtualMemory(int vaddr, byte[] data, int offset, int length) {
-		System.out.println("?????????????--->Super's write VM");
 		//Check if arguments are valid.
 		Lib.assertTrue(offset >= 0 && length >= 0
 				&& offset + length <= data.length);
