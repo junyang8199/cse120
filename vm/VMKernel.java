@@ -5,10 +5,8 @@ import nachos.threads.*;
 import nachos.userprog.*;
 
 import java.lang.*;
-import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
+
 /**
  * A kernel that can support multiple demand-paging user processes.
  */
@@ -18,8 +16,6 @@ public class VMKernel extends UserKernel {
 	 */
 	public VMKernel() {
 		super();
-        //Arrays.fill(physicalPages, null);
-        //memoryLock = new Lock();
         pinCond = new Condition(memoryLock);
 
     }
@@ -30,6 +26,14 @@ public class VMKernel extends UserKernel {
 	public void initialize(String[] args) {
 		super.initialize(args);
 		swapSpace = new SwapFile();
+		pinLock = new Lock();
+        pinCond = new Condition(pinLock);
+        physicalPages = new MemoryPage[Machine.processor().getNumPhysPages()];
+        for (int i = 0; i < physicalPages.length; i++) {
+            physicalPages[i] = new MemoryPage();
+        }
+        swapMap = new HashMap<>();
+
 	}
 
 	/**
@@ -50,19 +54,12 @@ public class VMKernel extends UserKernel {
 	 * Terminate this kernel. Never returns.
 	 */
 	public void terminate() {
-		swapSpace.clear();
-		ThreadedKernel.fileSystem.remove(swapSpace.getName());
+		swapSpace.swapFile.close();
+		ThreadedKernel.fileSystem.remove(swapSpace.swapFile.getName());
         super.terminate();
 	}
 
     /**
-     * Allocate a page in memory
-     * If memory has available space, directly return page
-     * If memory is full, evict a page
-     * If page is dirty, swap out
-     * If page is in swap file, swap in
-     * @return TranslationEntry of newly allocated page
-     */
     public static TranslationEntry allocatePage(int pid, int vpn) {
         //System.out.println("allocating page!!!!!!!!!!!!!!!!!!");
         //System.out.println("allocate page for: " + vpn + " for process: " + pid);
@@ -115,12 +112,9 @@ public class VMKernel extends UserKernel {
 
         return page.entry;
     }
+     */
 
     /**
-     * Pick a victim page to evict based on clock algorithm
-     * when the memory is full
-     * @return victim page in memory to evict
-     */
     public static MemoryPage clockAlgorithm() {
 
         MemoryPage page;
@@ -156,11 +150,6 @@ public class VMKernel extends UserKernel {
 
         return page;
     }
-
-	/**
-	 * Pin the page in memory so that this page cannot be evicted
-	 * @param ppn
-	 */
 	protected static void pin(int ppn) {
 
 	    // Only pin the page that is already allocated in physical memory
@@ -172,11 +161,6 @@ public class VMKernel extends UserKernel {
         page.pinned = true;
 		memoryLock.release();
 	}
-
-	/**
-	 * Unpin the page in memory
-	 * @param ppn
-	 */
 	protected static void unpin(int ppn) {
 		memoryLock.acquire();
 		MemoryPage page = physicalPages[ppn];
@@ -187,13 +171,9 @@ public class VMKernel extends UserKernel {
         pinCond.wake();  // wake up the process who wants to evict a page
 		memoryLock.release();
 	}
+     */
 
     /**
-     * Check if given page is already existed in memory
-     * @param pid
-     * @param vpn
-     * @return
-     */
 	protected static boolean pageInMemory(int pid, int vpn) {
 	    TableKey key = new TableKey(pid, vpn);
 	    if (invertedPageTable.containsKey(key)) return true;
@@ -208,12 +188,7 @@ public class VMKernel extends UserKernel {
 	    invertedPageTable.remove(key);
     }
 
-    /**
-     * Check if given page is already existed in swap file
-     * @param pid
-     * @param vpn
-     * @return
-     */
+
     protected static boolean pageInSwapFile(int pid, int vpn) {
         TableKey key = new TableKey(pid, vpn);
         if (swapSpace.swapPageTable.containsKey(key)) return true;
@@ -224,26 +199,22 @@ public class VMKernel extends UserKernel {
         TableKey key = new TableKey(pid, vpn);
         swapSpace.swapPageTable.remove(key);
     }
-
-    /**
-     * Get a free page
-     * @return ppn, or -1 if we don't have free page
-     */
     protected static int getFreePage() {
         for (int i = 0; i < physicalPages.length; i++) {
             if (physicalPages[i] == null) return i;
         }
         return -1;
     }
-
-    /**
-     * Free a physical page in memory
-     * @param ppn
-     */
     protected static void freeThePage(int ppn) {
         physicalPages[ppn] = null;
     }
-
+    protected static int freePagesNum() {
+        return super.freePagesNum();
+    }
+    protected static int getPage() {
+        return super.getPage();
+    }
+    */
 	// dummy variables to make javac smarter
 	private static VMProcess dummy1 = null;
 
@@ -253,33 +224,29 @@ public class VMKernel extends UserKernel {
 
 	//protected static Lock memoryLock;
 
-	private static int pinnedPageNum = 0;
+	protected static int pinnedPageNum = 0;
 
-	private static Condition pinCond;
-
-	private static int clock = 0;
+	protected static Lock pinLock;
+	protected static Condition pinCond;
 
 	// a global page table matching <pid, vpn> to physical page in memory
-	protected static Hashtable<TableKey, MemoryPage> invertedPageTable = new Hashtable<>();
+	//protected static Hashtable<TableKey, MemoryPage> invertedPageTable = new Hashtable<>();
 
 	// an array of physical pages in memory indexed by ppn
     protected static MemoryPage[] physicalPages = new MemoryPage[Machine.processor().getNumPhysPages()];
 
+    protected static HashMap<Integer, Integer> swapMap;
+
+    //protected static LinkedList<Integer> freeList;
 
 	public static class MemoryPage {
-	    TranslationEntry entry;
-	    int pid;
+	    UserProcess process;
+	    int vpn;
 	    boolean pinned = false;
-        MemoryPage(int pid, TranslationEntry entry, boolean pinned) {
-	        this.pid = pid;
-	        this.entry = entry;
-	        this.pinned = false;
-        }
+        MemoryPage() {}
     }
 
     /**
-     * This class has format as <pid, vpn> to map the PPN in global page table
-     */
     public static class TableKey {
 	    int pid;
 	    int vpn;
@@ -289,10 +256,7 @@ public class VMKernel extends UserKernel {
 	        this.vpn = vpn;
         }
 
-		/**
-         * Use address as hash value can make sure there is no collision
-		 * @return
-		 */
+
 		@Override
 		public int hashCode() {
 		    int hash = 23;
@@ -311,6 +275,8 @@ public class VMKernel extends UserKernel {
 			}
 		}
     }
+     */
+
 
     /**
      * This class represents the swap space in disk
@@ -319,34 +285,35 @@ public class VMKernel extends UserKernel {
     protected static class SwapFile {
 
 
-        // this hashtable is used to check if certain page has ever been swapped out to disk
-        static Hashtable<TableKey, SwapPage> swapPageTable;
 
         // the file system for swap space
         static OpenFile swapFile;
 
         // track the available position at tail
-        static int tail;
+        //static int tail;
 
         // track the empty position in middle
-        static HashSet<Integer> availablePosition;
+        //static HashSet<Integer> availablePosition;
+
+        static LinkedList<Integer> freeList;
+
+        static Lock swapLock;
+
+        static Condition swapFull;
+
+        static HashMap<Integer, UserProcess> processMap;
 
         SwapFile() {
             swapFile = ThreadedKernel.fileSystem.open("swapFile", true);
-            swapPageTable = new Hashtable<>();
-            tail = 0;
-            availablePosition = new HashSet<>();
+            swapLock = new Lock();
+            swapFull = new Condition(swapLock);
+            processMap = new HashMap<>();
+            for (int i = 0; i < 100; i++) {
+                freeList.add(i);
+            }
         }
 
         /**
-         * Swap File ------> Physical Memory
-         * 1. get the position
-         * 2. read page
-         * 3. free the position
-         * @param pid
-         * @param vpn
-         * @param ppn
-         */
         static void swapIn(int pid, int vpn, int ppn) {
             System.out.println("I swap " + vpn + " in!!!!!!");
             // get the corresponding page from swap file
@@ -365,14 +332,44 @@ public class VMKernel extends UserKernel {
             // free the position
             availablePosition.add(page.swapPositionIndex);
         }
+         */
+        static int swapIn(int spn, int ppn) {
+            if (freeList.get(spn) != -1) {
+                return -1;
+            }
+            int swapResult = swapFile.read(spn * Processor.pageSize,
+                    Machine.processor().getMemory(),
+                    ppn * Processor.pageSize, Processor.pageSize);
+            if (swapResult != -1) {
+                freeList.add(spn);
+                swapLock.acquire();
+                swapFull.wake();
+                swapLock.release();
+            }
+            return swapResult;
+        }
+        static int swapOut(int ppn) {
+            swapLock.acquire();
+            while(freeList.size() == 0) {
+                swapFull.sleep();
+            }
+            swapLock.release();
+
+            int spn = freeList.remove();
+            int swapResult = swapFile.write(spn * Processor.pageSize,
+                    Machine.processor().getMemory(), ppn * Processor.pageSize,
+                    Processor.pageSize);
+
+            if (swapResult >= 0) {
+                processMap.put(spn, physicalPages[ppn].process);
+                swapMap.put(physicalPages[ppn].vpn, spn);
+                return spn;
+            }
+            return swapResult;
+        }
+
 
         /**
-         * Physical memory ------> swap file
-         * 1. find available position
-         * 2. write page
-         * 3. invalid the page in memory
-         * @param page
-         */
         static void swapOut(MemoryPage page) {
             System.out.println("I swap " + page.entry.vpn + " out");
             if (!page.entry.valid) return;
@@ -394,29 +391,15 @@ public class VMKernel extends UserKernel {
             swapPageTable.put(new TableKey(page.pid, page.entry.vpn), pageInSwapFile);
         }
 
-        /**
-         * Iterate the entry in available position, and get one
-         * This method is called only when there has at least available position
-         * @return
-         */
         static int getPosition() {
             Iterator iterator = availablePosition.iterator();
             int position = (int)iterator.next();
             availablePosition.remove(position);
             return position;
         }
-        static String getName() {
-            return swapFile.getName();
-        }
-
-        /**
-         * Clear the swap file when kernel terminates
          */
-        static void clear() {
-            swapFile.close();
-        }
     }
-
+    /**
     private static class SwapPage {
 
 	    int swapPositionIndex;
@@ -427,4 +410,5 @@ public class VMKernel extends UserKernel {
 	        translationEntry = entry;
         }
     }
+     */
 }

@@ -126,7 +126,7 @@ public class UserKernel extends ThreadedKernel {
 	/**
 	 * Get the number of available physical pages.
 	 */
-	protected static int freePagesNum() {
+	public static int freePagesNum() {
 		//moemoryLock should be held here.
 		return freePages.size();
 	}
@@ -134,7 +134,7 @@ public class UserKernel extends ThreadedKernel {
 	/**
 	 * Remove one page from the free pages list.
 	 */
-	protected static int getPage() {
+	public static int getPage() {
 		//moemoryLock should be held here.
 		return freePages.remove();
 	}
@@ -188,7 +188,7 @@ public class UserKernel extends ThreadedKernel {
 	/**
 	 * Get the number of live processes.
 	 */
-	protected static int getNumPros() {
+	public static int getNumPros() {
 		//numProsLock should be held here.
 		return numProcess;
 	}
