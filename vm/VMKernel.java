@@ -26,9 +26,9 @@ public class VMKernel extends UserKernel {
 		swapSpace = new SwapFile();
 		pinLock = new Lock();
         pinCond = new Condition(pinLock);
-        physicalPages = new MemoryPage[Machine.processor().getNumPhysPages()];
-        for (int i = 0; i < physicalPages.length; i++) {
-            physicalPages[i] = new MemoryPage();
+        invertedPageTable = new MemoryPage[Machine.processor().getNumPhysPages()];
+        for (int i = 0; i < invertedPageTable.length; i++) {
+            invertedPageTable[i] = new MemoryPage();
         }
         swapMap = new HashMap<>();
 
@@ -73,7 +73,7 @@ public class VMKernel extends UserKernel {
 	protected static Condition pinCond;
 
 	// an array of physical pages in memory indexed by ppn
-    protected static MemoryPage[] physicalPages = new MemoryPage[Machine.processor().getNumPhysPages()];
+    protected static MemoryPage[] invertedPageTable = new MemoryPage[Machine.processor().getNumPhysPages()];
 
     // vpn ---> index of page in swap space
     protected static HashMap<Integer, Integer> swapMap;
@@ -151,8 +151,8 @@ public class VMKernel extends UserKernel {
                     Processor.pageSize);
 
             if (swapResult >= 0) {
-                processMap.put(spn, physicalPages[ppn].process);
-                swapMap.put(physicalPages[ppn].vpn, spn);
+                processMap.put(spn, invertedPageTable[ppn].process);
+                swapMap.put(invertedPageTable[ppn].vpn, spn);
                 return spn;
             }
             return swapResult;

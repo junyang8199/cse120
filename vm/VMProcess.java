@@ -186,7 +186,7 @@ public class VMProcess extends UserProcess {
             VMKernel.pinCond.sleep();
         }
         VMKernel.pinnedPageNum++;
-        VMKernel.physicalPages[entry.ppn].pinned = true;
+        VMKernel.invertedPageTable[entry.ppn].pinned = true;
         VMKernel.pinLock.release();
         return entry.ppn;
     }
@@ -202,7 +202,7 @@ public class VMProcess extends UserProcess {
 
         VMKernel.pinLock.acquire();
         VMKernel.pinnedPageNum--;
-        VMKernel.physicalPages[entry.ppn].pinned = false;
+        VMKernel.invertedPageTable[entry.ppn].pinned = false;
         VMKernel.pinCond.wake();
         VMKernel.pinLock.release();
     }
@@ -298,7 +298,7 @@ public class VMProcess extends UserProcess {
             do {
                 ppn = clockAlgorithm();
             }
-            while (VMKernel.physicalPages[ppn].pinned);
+            while (VMKernel.invertedPageTable[ppn].pinned);
             allocatePage(vpn, ppn, true);
         }
     }
@@ -308,12 +308,12 @@ public class VMProcess extends UserProcess {
      * @return
      */
     protected int clockAlgorithm() {
-	    while (pageTable[VMKernel.physicalPages[clock].vpn].used) {
-	        pageTable[VMKernel.physicalPages[clock].vpn].used = false;
-	        clock = (clock + 1) % VMKernel.physicalPages.length;
+	    while (pageTable[VMKernel.invertedPageTable[clock].vpn].used) {
+	        pageTable[VMKernel.invertedPageTable[clock].vpn].used = false;
+	        clock = (clock + 1) % VMKernel.invertedPageTable.length;
         }
         int ppn = clock;
-	    clock = (clock + 1) % VMKernel.physicalPages.length;
+	    clock = (clock + 1) % VMKernel.invertedPageTable.length;
 	    return ppn;
     }
 
@@ -348,11 +348,11 @@ public class VMProcess extends UserProcess {
         PTEntry.ppn = ppn;
         PTEntry.valid = true;
         PTEntry.readOnly = readOnly;
-        VMKernel.physicalPages[ppn].vpn = vpn;
-        VMKernel.physicalPages[ppn].process = this;
+        VMKernel.invertedPageTable[ppn].vpn = vpn;
+        VMKernel.invertedPageTable[ppn].process = this;
     }
     protected void handleEvict(int vpn, int ppn) {
-        int oldVPN = VMKernel.physicalPages[ppn].vpn;
+        int oldVPN = VMKernel.invertedPageTable[ppn].vpn;
         TranslationEntry oldEntry = pageTable[oldVPN];
 
         int inCoff = inCoff(vpn);
@@ -370,8 +370,8 @@ public class VMProcess extends UserProcess {
             }
         }
         oldEntry.valid = false;
-        VMKernel.physicalPages[ppn].vpn = vpn;
-        VMKernel.physicalPages[ppn].process = this;
+        VMKernel.invertedPageTable[ppn].vpn = vpn;
+        VMKernel.invertedPageTable[ppn].process = this;
 
         for (int i = 0; i < Machine.processor().getTLBSize(); i++) {
             TranslationEntry TLBEntry = new TranslationEntry(Machine.processor().readTLBEntry(i));
@@ -383,6 +383,13 @@ public class VMProcess extends UserProcess {
         }
 
     }
+
+    /**
+     * Check if vpn is valid, that is, we can find corresponding section in .coff file
+     * And also check if section is read only
+     * @param vpn
+     * @return
+     */
     protected int inCoff(int vpn) {
         boolean readOnly;
         for (int i = 0; i < coff.getNumSections(); i++) {
