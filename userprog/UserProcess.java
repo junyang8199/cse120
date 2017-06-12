@@ -644,10 +644,12 @@ public class UserProcess {
 			return -1;
 		}
 		//File name must include the ".coff" extension.
+		/**
 		String extension = fileName.substring(fileName.length()-5, fileName.length());
 		if (!extension.equals(".coff")) {
 			return -1;
 		}
+		 */
 
 		//Read arguments.
 		String[] args = new String[argc];
